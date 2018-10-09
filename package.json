@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node index"
+    "start": "check-node-version --package && ts-node index"
   },
   "repository": {
     "type": "git",
@@ -26,5 +26,8 @@
     "prettier": "^1.14.3",
     "ts-node": "^7.0.1",
     "typescript": "^3.1.1"
+  },
+  "dependencies": {
+    "check-node-version": "^3.2.0"
   }
 }
