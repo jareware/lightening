@@ -1,0 +1,19 @@
+{
+  "name": "lightening",
+  "version": "0.0.1-dev",
+  "description": "The lightening! It's happening!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jareware/lightening.git"
+  },
+  "author": "Jarno Rantanen <jarno@jrw.fi>",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/jareware/lightening/issues"
+  },
+  "homepage": "https://github.com/jareware/lightening#readme"
+}
