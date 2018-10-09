@@ -8,7 +8,8 @@
     "npm": "6.4.1"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node index"
   },
   "repository": {
     "type": "git",
@@ -19,5 +20,10 @@
   "bugs": {
     "url": "https://github.com/jareware/lightening/issues"
   },
-  "homepage": "https://github.com/jareware/lightening#readme"
+  "homepage": "https://github.com/jareware/lightening#readme",
+  "devDependencies": {
+    "@types/node": "^10.11.6",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.1.1"
+  }
 }
