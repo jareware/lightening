@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "check-node-version --package && ts-node index"
+    "start": "check-node-version --package && NODE_PATH=src ts-node index"
   },
   "repository": {
     "type": "git",
