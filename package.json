@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "check-node-version --package && NODE_PATH=src ts-node index"
+    "start-server": "check-node-version --package && NODE_PATH=src ts-node src/lightening/server"
   },
   "repository": {
     "type": "git",
@@ -30,10 +30,12 @@
   "dependencies": {
     "@types/cli-table": "^0.3.0",
     "@types/lodash": "^4.14.117",
+    "@types/ws": "^6.0.1",
     "check-node-version": "^3.2.0",
     "cli-table": "^0.3.1",
     "http-server": "^0.11.1",
     "lodash": "^4.17.11",
-    "node-tradfri-client": "^1.3.4"
+    "node-tradfri-client": "^1.3.4",
+    "ws": "^6.1.0"
   }
 }
