@@ -2,12 +2,11 @@ import { TradfriClient, Accessory, Group, AccessoryTypes } from 'node-tradfri-cl
 import { NO_LOGGING } from 'lightening/utils/logging';
 import { Config } from 'lightening/utils/config';
 import { EventEmitter } from 'events';
+import { WorldState, TradfriObject, createLight } from 'lightening/utils/model';
 
 interface WorldStateEmitter extends EventEmitter {
   on(event: 'change', callback: (newWorldState: WorldState) => void): this;
 }
-
-export type WorldState = { objects: { [id: string]: TradfriObject } };
 
 export function createTradfriClient(config: Config, log = NO_LOGGING) {
   log.info('Creating Trådfri client', config);
@@ -55,52 +54,4 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
     world = { ...world, objects: { ...world.objects, [object.id]: object } };
     events.emit('change', world);
   }
-}
-
-export type TradfriObject = Light;
-
-export type WhiteColor = {
-  space: 'white';
-  temperature: number;
-};
-
-export type RgbColor = {
-  space: 'rgb';
-  hue: number;
-  saturation: number;
-};
-
-export type Color = WhiteColor | RgbColor;
-
-export type Light = {
-  type: 'LIGHT';
-  id: number;
-  name: string;
-  model: string;
-  power: number;
-  alive: boolean;
-  on: boolean;
-  dimmer: number;
-  color: Color;
-};
-
-export function createLight(light: Accessory): Light {
-  if (light.type !== AccessoryTypes.lightbulb)
-    throw new Error(`Unexpected type "${light.type}", expecting "${AccessoryTypes.lightbulb}" for a Light`);
-  if (light.lightList.length !== 1)
-    throw new Error(`Unexpected lightList length "${light.lightList.length}" for instanceId "${light.instanceId}"`);
-  return {
-    type: 'LIGHT',
-    id: light.instanceId,
-    name: light.name,
-    model: light.deviceInfo.modelNumber,
-    power: light.deviceInfo.power,
-    alive: light.alive,
-    on: light.lightList[0].onOff,
-    dimmer: light.lightList[0].dimmer,
-    color:
-      'hue' in light.lightList[0]
-        ? { space: 'rgb', hue: light.lightList[0].hue, saturation: light.lightList[0].saturation }
-        : { space: 'white', temperature: light.lightList[0].colorTemperature },
-  };
 }
