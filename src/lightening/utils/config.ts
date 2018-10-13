@@ -1,3 +1,5 @@
+export type Config = ReturnType<typeof readConfigFromEnv>;
+
 export function readConfigFromEnv() {
   return {
     LIGHTENING_TRADFRI_HOSTNAME: process.env.LIGHTENING_TRADFRI_HOSTNAME || '',
