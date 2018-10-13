@@ -8,7 +8,6 @@
     "npm": "6.4.1"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start-server": "check-node-version --package && NODE_PATH=src ts-node src/lightening/server"
   },
   "repository": {
