@@ -6,6 +6,8 @@
     ],
     "module": "commonjs",
     "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "baseUrl": ".",
     "esModuleInterop": true,
     "paths": {
