@@ -11,6 +11,8 @@ RUN npm install
 
 COPY src /app/src
 
+RUN npm run build-client
+
 EXPOSE 8080
 EXPOSE 8081
 
