@@ -9,7 +9,8 @@
   },
   "scripts": {
     "start": "check-node-version --package && NODE_PATH=src ts-node src/lightening/server",
-    "build-client": "NODE_PATH=src browserify src/lightening/client/index.ts -p [ tsify --project src/lightening/client ] > src/lightening/client/index.js"
+    "build-client": "NODE_PATH=src browserify src/lightening/client/index.ts -p [ tsify --project src/lightening/client ]     > src/lightening/client/index.js",
+    "watch-client": "NODE_PATH=src watchify   src/lightening/client/index.ts -p [ tsify --project src/lightening/client ] -v -o src/lightening/client/index.js"
   },
   "repository": {
     "type": "git",
@@ -39,6 +40,7 @@
     "node-static": "^0.7.11",
     "node-tradfri-client": "^1.3.4",
     "tsify": "^4.0.0",
+    "watchify": "^3.11.0",
     "ws": "^6.1.0"
   }
 }
