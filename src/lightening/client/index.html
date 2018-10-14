@@ -15,16 +15,7 @@
 
 <body>
   <pre></pre>
-  <script>
-    var pre = document.querySelector('pre');
-    var url = location.protocol.replace(/^http/, 'ws') + '//' + location.hostname + ':' + (location.port + 1);
-    var socket = new WebSocket('ws://localhost:8081');
-    socket.onopen = function (evt) { console.log('WebSocket opened', evt) };
-    socket.onclose = function (evt) { console.log('WebSocket closed', evt) };
-    socket.onerror = function (evt) { console.log('WebSocket error', evt) };
-    socket.onmessage = function (evt) { console.log('WebSocket message', evt); pre.innerText = evt.data };
-    console.log('Hello World!');
-  </script>
+  <script src="index.js" async></script>
 </body>
 
 </html>

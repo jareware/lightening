@@ -1,6 +1,10 @@
+# Generic
 node_modules/
 npm-debug.log
 .env
 .DS_Store
 .history
 .vscode
+
+# Project
+/src/lightening/client/index.js

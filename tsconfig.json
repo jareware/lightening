@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es5",
     "lib": [
-      "es2015",
+      "es2015"
     ],
     "module": "commonjs",
     "strict": true,
@@ -11,7 +11,7 @@
     "baseUrl": ".",
     "esModuleInterop": true,
     "paths": {
-      "lightening/*": ["./src/lightening/*"],
-    },
-  },
+      "lightening/*": ["./src/lightening/*"]
+    }
+  }
 }
