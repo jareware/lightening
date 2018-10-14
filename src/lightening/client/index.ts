@@ -1,6 +1,9 @@
-var pre = document.querySelector('pre');
+var pre = document.createElement('pre');
+document.body.appendChild(pre);
+
 var url = location.protocol.replace(/^http/, 'ws') + '//' + location.hostname + ':' + 8081;
 var socket = new WebSocket(url);
+
 socket.onopen = function(evt) {
   console.log('WebSocket opened', evt);
 };
