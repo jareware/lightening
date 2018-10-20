@@ -1,4 +1,4 @@
-import { TradfriClient, Accessory, Group, AccessoryTypes } from 'node-tradfri-client';
+import { TradfriClient, Accessory, Group, AccessoryTypes } from 'node-tradfri-client'; // @see https://github.com/AlCalzone/node-tradfri-client
 import { NO_LOGGING } from 'lightening/utils/logging';
 import { Config } from 'lightening/utils/config';
 import { EventEmitter } from 'events';
@@ -29,6 +29,13 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
       log.debug('Connected!');
       tradfri.on('group updated', group => update(convert(group))).observeGroupsAndScenes();
       tradfri.on('device updated', device => update(convert(device))).observeDevices();
+      setInterval(
+        () =>
+          tradfri
+            .ping()
+            .then(() => log.debug('Got ping from gateway'), () => log.warn('Gateway did not respond to ping')),
+        60 * 1000,
+      );
     })
     .catch(err => console.log('ERROR', err));
 
