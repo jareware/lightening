@@ -29,13 +29,16 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
       log.debug('Connected!');
       tradfri.on('group updated', group => update(convert(group))).observeGroupsAndScenes();
       tradfri.on('device updated', device => update(convert(device))).observeDevices();
-      setInterval(
-        () =>
-          tradfri
-            .ping()
-            .then(() => log.debug('Got ping from gateway'), () => log.warn('Gateway did not respond to ping')),
-        60 * 1000,
-      );
+      setInterval(() => {
+        const then = Date.now();
+        const timeout = 5000;
+        tradfri
+          .ping(timeout)
+          .then(
+            () => log.debug(`Got ping from gateway (RTT ${Date.now() - then} ms)`),
+            () => log.warn(`Gateway did not respond to ping (timeout ${timeout} ms)`),
+          );
+      }, 60 * 1000);
     })
     .catch(err => console.log('ERROR', err));
 
