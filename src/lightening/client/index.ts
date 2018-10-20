@@ -26,8 +26,11 @@ function render(ws: WorldState) {
   el(
     document.body,
     ul(
-      values(ws.objects).map(light =>
-        li({ class: light.on ? 'on' : 'off', click: event => console.log('CLICK', event.target) }, light.name),
+      values(ws.objects).map(object =>
+        li(
+          { class: object.on ? 'on' : 'off', click: event => console.log('CLICK', event.target) },
+          `[${object.type}] ${object.name}`,
+        ),
       ),
     ),
   );

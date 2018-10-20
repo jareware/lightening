@@ -1,10 +1,9 @@
 import * as Tradfri from 'node-tradfri-client'; // @see https://github.com/AlCalzone/node-tradfri-client
 
-export type LighteningModel = WorldState | Light;
+export type LighteningModel = WorldState | Light | Group;
+export type TradfriObject = Light | Group;
 
 export type WorldState = { objects: { [id: string]: TradfriObject } };
-
-export type TradfriObject = Light | Group;
 
 export type WhiteColor = {
   space: 'white';
