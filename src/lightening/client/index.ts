@@ -1,4 +1,4 @@
-import { el } from 'lightening/client/utils/el';
+import { el, li, ul } from 'lightening/client/utils/el';
 import { WorldState } from 'lightening/utils/model';
 import { values } from 'lightening/utils/data';
 
@@ -25,10 +25,9 @@ function render(ws: WorldState) {
   document.body.innerHTML = '';
   el(
     document.body,
-    el(
-      'ul',
+    ul(
       values(ws.objects).map(light =>
-        el('li', { class: light.on ? 'on' : 'off', click: event => console.log('CLICK', event.target) }, light.name),
+        li({ class: light.on ? 'on' : 'off', click: event => console.log('CLICK', event.target) }, light.name),
       ),
     ),
   );
