@@ -4,7 +4,7 @@ export type LighteningModel = WorldState | Light;
 
 export type WorldState = { objects: { [id: string]: TradfriObject } };
 
-export type TradfriObject = Light;
+export type TradfriObject = Light | Group;
 
 export type WhiteColor = {
   space: 'white';
@@ -49,5 +49,25 @@ export function createLight(light: Tradfri.Accessory): Light {
       'hue' in light.lightList[0]
         ? { space: 'rgb', hue: light.lightList[0].hue, saturation: light.lightList[0].saturation }
         : { space: 'white', temperature: light.lightList[0].colorTemperature },
+  };
+}
+
+export type Group = {
+  type: 'GROUP';
+  id: number;
+  name: string;
+  on: boolean;
+  dimmer: number;
+  devices: number[];
+};
+
+export function createGroup(group: Tradfri.Group): Group {
+  return {
+    type: 'GROUP',
+    id: group.instanceId,
+    name: group.name,
+    on: group.onOff,
+    dimmer: group.dimmer,
+    devices: group.deviceIDs,
   };
 }

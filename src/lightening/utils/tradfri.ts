@@ -2,7 +2,7 @@ import * as Tradfri from 'node-tradfri-client'; // @see https://github.com/AlCal
 import { NO_LOGGING } from 'lightening/utils/logging';
 import { Config } from 'lightening/utils/config';
 import { EventEmitter } from 'events';
-import { WorldState, TradfriObject, createLight } from 'lightening/utils/model';
+import { WorldState, TradfriObject, createLight, createGroup } from 'lightening/utils/model';
 
 interface WorldStateEmitter extends EventEmitter {
   on(event: 'change', callback: (newWorldState: WorldState) => void): this;
@@ -46,7 +46,7 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
 
   function convert(x: Tradfri.Group | Tradfri.Accessory): TradfriObject | null {
     if (x instanceof Tradfri.Group) {
-      return null;
+      return createGroup(x);
     } else if (x instanceof Tradfri.Accessory) {
       if (x.type === Tradfri.AccessoryTypes.lightbulb) return createLight(x);
       return null;
