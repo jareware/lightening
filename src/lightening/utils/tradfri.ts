@@ -65,7 +65,7 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
       log.debug('Ignoring empty world update');
       return;
     }
-    log.debug(`Object "${object.id}" changed`);
+    log.debug(`${object.type}#${object.id} changed`);
     world = { ...world, objects: { ...world.objects, [object.id]: object } };
     events.emit('change', world);
   }

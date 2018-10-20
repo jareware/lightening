@@ -29,7 +29,7 @@ function render(ws: WorldState) {
       values(ws.objects).map(object =>
         li(
           { class: object.on ? 'on' : 'off', click: event => console.log('CLICK', event.target) },
-          `[${object.type}] ${object.name}`,
+          `[${object.type}#${object.id}] ${object.name} (dimmer: ${object.dimmer})`,
         ),
       ),
     ),
