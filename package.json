@@ -2,7 +2,6 @@
   "name": "lightening",
   "version": "0.0.1-dev",
   "description": "The lightening! It's happening!",
-  "main": "index.js",
   "engines": {
     "node": "10.11.0",
     "npm": "6.4.1"
