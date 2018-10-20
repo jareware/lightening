@@ -11,10 +11,10 @@ RUN npm install
 
 COPY src /app/src
 
-RUN npm run build-client
-RUN npm run build-server
+RUN npm run client-build
+RUN npm run server-build
 
 EXPOSE 8080
 EXPOSE 8081
 
-CMD [ "npm", "start" ]
+CMD [ "npm", "run", "server-start" ]

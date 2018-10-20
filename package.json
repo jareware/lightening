@@ -8,11 +8,15 @@
     "npm": "6.4.1"
   },
   "scripts": {
-    "start": "check-node-version --package && NODE_PATH=src ts-node src/lightening/server",
-    "start-server": "check-node-version --package && NODE_PATH=src node src/lightening/server",
-    "build-server": "NODE_PATH=src tsc --project src/lightening/server",
-    "build-client": "NODE_PATH=src browserify src/lightening/client/index.ts -p [ tsify --project src/lightening/client ]     > src/lightening/client/index.js",
-    "watch-client": "NODE_PATH=src watchify   src/lightening/client/index.ts -p [ tsify --project src/lightening/client ] -v -o src/lightening/client/index.js"
+    "==================== COMMON ====================": "",
+    "lint": "echo TODO",
+    "==================== CLIENT ====================": "",
+    "client-dev": "NODE_PATH=src watchify src/lightening/client/index.ts -p [ tsify --project src/lightening/client ] -v -o src/lightening/client/index.js",
+    "client-build": "NODE_PATH=src browserify src/lightening/client/index.ts -p [ tsify --project src/lightening/client ] > src/lightening/client/index.js",
+    "==================== SERVER ====================": "",
+    "server-dev": "check-node-version --package && NODE_PATH=src ts-node src/lightening/server",
+    "server-build": "NODE_PATH=src tsc --project src/lightening/server",
+    "server-start": "check-node-version --package && NODE_PATH=src node src/lightening/server"
   },
   "repository": {
     "type": "git",
