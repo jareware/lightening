@@ -1,6 +1,8 @@
 type ScalarArg = string | number | boolean;
 type FalsyArg = null | undefined | false;
-type ElementProps = { [attribute: string]: string };
+type EventHandlerMap = { [event in keyof HTMLElementEventMap]: (event: HTMLElementEventMap[event]) => any };
+type HtmlAttributeMap = { [attribute in HtmlAttribute]: string };
+type ElementProps = Partial<HtmlAttributeMap & EventHandlerMap>;
 type VarArg = ElementProps | ScalarArg | HTMLElement | FalsyArg | (HTMLElement | FalsyArg)[];
 
 // Convenience method 1: Create a text node
@@ -38,7 +40,11 @@ export function el(...args: any[]) {
         node.appendChild(arg);
       } else if (arg) {
         Object.keys(arg).forEach(function(key) {
-          node.setAttribute(key, arg[key]);
+          if (typeof arg[key] === 'function') {
+            node.addEventListener(key, arg[key]);
+          } else {
+            node.setAttribute(key, arg[key]);
+          }
         });
       }
     } else if (['string', 'number', 'boolean'].indexOf(typeof arg) >= 0) {
@@ -47,3 +53,127 @@ export function el(...args: any[]) {
   });
   return node;
 }
+
+// @see https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes
+type HtmlAttribute =
+  | 'accept'
+  | 'accept-charset'
+  | 'accesskey'
+  | 'action'
+  | 'align'
+  | 'allow'
+  | 'alt'
+  | 'async'
+  | 'autocapitalize'
+  | 'autocomplete'
+  | 'autofocus'
+  | 'autoplay'
+  | 'bgcolor'
+  | 'border'
+  | 'buffered'
+  | 'challenge'
+  | 'charset'
+  | 'checked'
+  | 'cite'
+  | 'class'
+  | 'code'
+  | 'codebase'
+  | 'color'
+  | 'cols'
+  | 'colspan'
+  | 'content'
+  | 'contenteditable'
+  | 'contextmenu'
+  | 'controls'
+  | 'coords'
+  | 'crossorigin'
+  | 'csp'
+  | 'data' // Note: While setting an attribute like "data-foo" is perfectly fine during runtime, we can't accommodate all the possible options during compile time; this seems like an acceptable compromise
+  | 'datetime'
+  | 'decoding'
+  | 'default'
+  | 'defer'
+  | 'dir'
+  | 'dirname'
+  | 'disabled'
+  | 'download'
+  | 'draggable'
+  | 'dropzone'
+  | 'enctype'
+  | 'for'
+  | 'form'
+  | 'formaction'
+  | 'headers'
+  | 'height'
+  | 'hidden'
+  | 'high'
+  | 'href'
+  | 'hreflang'
+  | 'http-equiv'
+  | 'icon'
+  | 'id'
+  | 'importance '
+  | 'integrity'
+  | 'ismap'
+  | 'itemprop'
+  | 'keytype'
+  | 'kind'
+  | 'label'
+  | 'lang'
+  | 'language'
+  | 'lazyload '
+  | 'list'
+  | 'loop'
+  | 'low'
+  | 'manifest'
+  | 'max'
+  | 'maxlength'
+  | 'minlength'
+  | 'media'
+  | 'method'
+  | 'min'
+  | 'multiple'
+  | 'muted'
+  | 'name'
+  | 'novalidate'
+  | 'open'
+  | 'optimum'
+  | 'pattern'
+  | 'ping'
+  | 'placeholder'
+  | 'poster'
+  | 'preload'
+  | 'radiogroup'
+  | 'readonly'
+  | 'rel'
+  | 'required'
+  | 'reversed'
+  | 'rows'
+  | 'rowspan'
+  | 'sandbox'
+  | 'scope'
+  | 'scoped'
+  | 'selected'
+  | 'shape'
+  | 'size'
+  | 'sizes'
+  | 'slot'
+  | 'span'
+  | 'spellcheck'
+  | 'src'
+  | 'srcdoc'
+  | 'srclang'
+  | 'srcset'
+  | 'start'
+  | 'step'
+  | 'style'
+  | 'summary'
+  | 'tabindex'
+  | 'target'
+  | 'title'
+  | 'translate'
+  | 'type'
+  | 'usemap'
+  | 'value'
+  | 'width'
+  | 'wrap';
