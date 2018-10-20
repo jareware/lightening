@@ -42,6 +42,11 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
     })
     .catch(err => console.log('ERROR', err));
 
+  process.on('SIGINT', () => {
+    log.info('Gracefully shutting down...');
+    tradfri.destroy();
+  });
+
   return { events };
 
   function convert(x: Tradfri.Group | Tradfri.Accessory): TradfriObject | null {
