@@ -1,5 +1,6 @@
-var pre = document.createElement('pre');
-document.body.appendChild(pre);
+import { el } from 'lightening/client/utils/el';
+import { WorldState } from 'lightening/utils/model';
+import { values } from 'lightening/utils/data';
 
 var url = location.protocol.replace(/^http/, 'ws') + '//' + location.hostname + ':' + 8081;
 var socket = new WebSocket(url);
@@ -14,6 +15,21 @@ socket.onerror = function(evt) {
   console.log('WebSocket error', evt);
 };
 socket.onmessage = function(evt) {
-  console.log('WebSocket message', evt);
-  if (pre) pre.innerText = evt.data;
+  const message = JSON.parse(evt.data);
+  console.log('WebSocket message', message);
+  render(message.state);
 };
+
+function render(ws: WorldState) {
+  console.log('render()', ws);
+  document.body.innerHTML = '';
+  el(
+    document.body,
+    el(
+      'ul',
+      values(ws.objects).map(light =>
+        el('li', { class: light.on ? 'on' : 'off', click: event => console.log('CLICK', event.target) }, light.name),
+      ),
+    ),
+  );
+}

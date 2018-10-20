@@ -1,5 +1,7 @@
 import { AccessoryTypes, Accessory } from 'node-tradfri-client';
 
+export type LighteningModel = WorldState | Light;
+
 export type WorldState = { objects: { [id: string]: TradfriObject } };
 
 export type TradfriObject = Light;
