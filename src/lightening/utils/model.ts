@@ -1,4 +1,4 @@
-import { AccessoryTypes, Accessory } from 'node-tradfri-client';
+import * as Tradfri from 'node-tradfri-client'; // @see https://github.com/AlCalzone/node-tradfri-client
 
 export type LighteningModel = WorldState | Light;
 
@@ -31,9 +31,9 @@ export type Light = {
   color: Color;
 };
 
-export function createLight(light: Accessory): Light {
-  if (light.type !== AccessoryTypes.lightbulb)
-    throw new Error(`Unexpected type "${light.type}", expecting "${AccessoryTypes.lightbulb}" for a Light`);
+export function createLight(light: Tradfri.Accessory): Light {
+  if (light.type !== Tradfri.AccessoryTypes.lightbulb)
+    throw new Error(`Unexpected type "${light.type}", expecting "${Tradfri.AccessoryTypes.lightbulb}" for a Light`);
   if (light.lightList.length !== 1)
     throw new Error(`Unexpected lightList length "${light.lightList.length}" for instanceId "${light.instanceId}"`);
   return {

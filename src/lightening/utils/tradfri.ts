@@ -1,4 +1,4 @@
-import { TradfriClient, Accessory, Group, AccessoryTypes } from 'node-tradfri-client'; // @see https://github.com/AlCalzone/node-tradfri-client
+import * as Tradfri from 'node-tradfri-client'; // @see https://github.com/AlCalzone/node-tradfri-client
 import { NO_LOGGING } from 'lightening/utils/logging';
 import { Config } from 'lightening/utils/config';
 import { EventEmitter } from 'events';
@@ -11,7 +11,7 @@ interface WorldStateEmitter extends EventEmitter {
 export function createTradfriClient(config: Config, log = NO_LOGGING) {
   log.info('Creating Trådfri client', config);
 
-  const tradfri = new TradfriClient(config.LIGHTENING_TRADFRI_HOSTNAME);
+  const tradfri = new Tradfri.TradfriClient(config.LIGHTENING_TRADFRI_HOSTNAME);
   const events: WorldStateEmitter = new EventEmitter();
 
   let world: WorldState = {
@@ -44,11 +44,11 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
 
   return { events };
 
-  function convert(x: Group | Accessory): TradfriObject | null {
-    if (x instanceof Group) {
+  function convert(x: Tradfri.Group | Tradfri.Accessory): TradfriObject | null {
+    if (x instanceof Tradfri.Group) {
       return null;
-    } else if (x instanceof Accessory) {
-      if (x.type === AccessoryTypes.lightbulb) return createLight(x);
+    } else if (x instanceof Tradfri.Accessory) {
+      if (x.type === Tradfri.AccessoryTypes.lightbulb) return createLight(x);
       return null;
     }
     log.warn("Don't know what to do with:", x);
