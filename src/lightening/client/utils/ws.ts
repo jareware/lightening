@@ -15,4 +15,10 @@ export function createWsClient(url: string, callback: (ws: WorldState) => void, 
       log.warn('Received unsupported message type', message);
     }
   });
+
+  return {
+    send(message: object) {
+      socket.send(JSON.stringify(message, null, 2));
+    },
+  };
 }

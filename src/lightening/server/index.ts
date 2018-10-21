@@ -8,7 +8,7 @@ const log = createConsoleLogger();
 const config = readConfigFromEnv();
 const tradfri = createTradfriClient(config, log);
 const web = createWebServer(config, log);
-const ws = createWebSocketServer(config, log);
+const ws = createWebSocketServer(config, tradfri, log);
 
 web;
 

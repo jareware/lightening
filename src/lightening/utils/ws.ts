@@ -2,8 +2,13 @@ import WebSocket from 'ws';
 import { WorldState } from 'lightening/utils/model';
 import { NO_LOGGING } from 'lightening/utils/logging';
 import { Config } from 'lightening/utils/config';
+import { createTradfriClient } from 'lightening/utils/tradfri';
 
-export function createWebSocketServer(config: Config, log = NO_LOGGING) {
+export function createWebSocketServer(
+  config: Config,
+  _tradfri: ReturnType<typeof createTradfriClient>,
+  log = NO_LOGGING,
+) {
   const wss = new WebSocket.Server({ port: config.LIGHTENING_WEBSOCKET_PORT });
 
   let connections: WebSocket[] = [];
@@ -19,6 +24,18 @@ export function createWebSocketServer(config: Config, log = NO_LOGGING) {
 
     ws.on('message', message => {
       log.debug('Message from client', message);
+      try {
+        const parsed = JSON.parse(message + '');
+        if (typeof parsed.toggleLight === 'number') {
+          log.info('Will toggle light:', parsed.toggleLight);
+        } else if (typeof parsed.toggleGroup === 'number') {
+          log.info('Will toggle group:', parsed.toggleGroup);
+        } else {
+          log.warn('Received well-formed but non-standard message from client');
+        }
+      } catch (err) {
+        log.warn('Received malformed message from client');
+      }
     });
 
     ws.on('close', (code, reason) => {
