@@ -18,6 +18,10 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
     objects: {},
   };
 
+  const tradfriLookup: {
+    [id: string]: Tradfri.Accessory;
+  } = {};
+
   log.debug('Connecting...');
 
   tradfri
@@ -47,13 +51,29 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
     tradfri.destroy();
   });
 
-  return { events };
+  return {
+    events,
+    toggleLight(id: number) {
+      return Promise.resolve()
+        .then(() => tradfriLookup[id])
+        .then(x => {
+          if (x instanceof Tradfri.Accessory && x.type === Tradfri.AccessoryTypes.lightbulb) {
+            return x.lightList[0].toggle();
+          } else {
+            throw new Error(`Didn't find light "${id}"`);
+          }
+        });
+    },
+  };
 
   function convert(x: Tradfri.Group | Tradfri.Accessory): TradfriObject | null {
     if (x instanceof Tradfri.Group) {
       return createGroup(x);
     } else if (x instanceof Tradfri.Accessory) {
-      if (x.type === Tradfri.AccessoryTypes.lightbulb) return createLight(x);
+      if (x.type === Tradfri.AccessoryTypes.lightbulb) {
+        tradfriLookup[x.instanceId] = x;
+        return createLight(x);
+      }
       return null;
     }
     log.warn("Don't know what to do with:", x);

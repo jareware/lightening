@@ -6,7 +6,7 @@ import { createTradfriClient } from 'lightening/utils/tradfri';
 
 export function createWebSocketServer(
   config: Config,
-  _tradfri: ReturnType<typeof createTradfriClient>,
+  tradfri: ReturnType<typeof createTradfriClient>,
   log = NO_LOGGING,
 ) {
   const wss = new WebSocket.Server({ port: config.LIGHTENING_WEBSOCKET_PORT });
@@ -28,6 +28,9 @@ export function createWebSocketServer(
         const parsed = JSON.parse(message + '');
         if (typeof parsed.toggleLight === 'number') {
           log.info('Will toggle light:', parsed.toggleLight);
+          tradfri
+            .toggleLight(parsed.toggleLight)
+            .then(res => log.info('Toggle succeeded', res), err => log.warn('Toggle failed', err));
         } else if (typeof parsed.toggleGroup === 'number') {
           log.info('Will toggle group:', parsed.toggleGroup);
         } else {
