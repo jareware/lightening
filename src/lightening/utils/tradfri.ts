@@ -19,7 +19,7 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
   };
 
   const tradfriLookup: {
-    [id: string]: Tradfri.Accessory;
+    [id: string]: Tradfri.Accessory | Tradfri.Group;
   } = {};
 
   log.debug('Connecting...');
@@ -64,10 +64,22 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
           }
         });
     },
+    toggleGroup(id: number) {
+      return Promise.resolve()
+        .then(() => tradfriLookup[id])
+        .then(x => {
+          if (x instanceof Tradfri.Group) {
+            return x.toggle(!x.onOff);
+          } else {
+            throw new Error(`Didn't find group "${id}"`);
+          }
+        });
+    },
   };
 
   function convert(x: Tradfri.Group | Tradfri.Accessory): TradfriObject | null {
     if (x instanceof Tradfri.Group) {
+      tradfriLookup[x.instanceId] = x;
       return createGroup(x);
     } else if (x instanceof Tradfri.Accessory) {
       if (x.type === Tradfri.AccessoryTypes.lightbulb) {

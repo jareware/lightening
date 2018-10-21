@@ -30,9 +30,12 @@ export function createWebSocketServer(
           log.info('Will toggle light:', parsed.toggleLight);
           tradfri
             .toggleLight(parsed.toggleLight)
-            .then(res => log.info('Toggle succeeded', res), err => log.warn('Toggle failed', err));
+            .then(res => log.info('Light toggle succeeded', res), err => log.warn('Light toggle failed', err));
         } else if (typeof parsed.toggleGroup === 'number') {
           log.info('Will toggle group:', parsed.toggleGroup);
+          tradfri
+            .toggleGroup(parsed.toggleGroup)
+            .then(res => log.info('Group toggle succeeded', res), err => log.warn('Group toggle failed', err));
         } else {
           log.warn('Received well-formed but non-standard message from client');
         }
