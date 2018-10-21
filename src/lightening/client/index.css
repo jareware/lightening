@@ -10,3 +10,7 @@ body {
 .off {
   color: gray;
 }
+
+li {
+  padding: 20px;
+}
