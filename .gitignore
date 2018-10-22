@@ -8,3 +8,4 @@ npm-debug.log
 
 # Project
 /src/lightening/client/index.js
+/src/lightening/client/index.css
