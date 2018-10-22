@@ -46,11 +46,6 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
     })
     .catch(err => console.log('ERROR', err));
 
-  process.on('SIGINT', () => {
-    log.info('Gracefully shutting down...');
-    tradfri.destroy();
-  });
-
   return {
     events,
     toggleLight(id: number) {
