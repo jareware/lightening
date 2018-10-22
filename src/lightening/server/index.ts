@@ -13,3 +13,9 @@ const ws = createWebSocketServer(config, tradfri, log);
 web;
 
 tradfri.events.on('change', ws.emitWorldState);
+
+// https://github.com/remy/nodemon/issues/1025#issuecomment-308049864
+process.on('SIGINT', () => {
+  log.info('Shutting down gracefully...');
+  setTimeout(() => process.exit(), 100);
+});
