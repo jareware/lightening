@@ -8,7 +8,7 @@
   },
   "scripts": {
     "==================== COMMON ====================": "",
-    "lint": "echo TODO",
+    "lint": "check-node-version --package",
     "==================== CLIENT ====================": "",
     "client-build": "npm run client-js-build && npm run client-css-build",
     "client-js-dev": "NODE_PATH=src watchify src/lightening/client/index.ts -p [ tsify --project src/lightening/client ] -v -o src/lightening/client/index.js",
