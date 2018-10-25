@@ -1,5 +1,3 @@
-import * as Tradfri from 'node-tradfri-client'; // @see https://github.com/AlCalzone/node-tradfri-client
-
 export type LighteningModel = WorldState | Light | Group;
 export type TradfriObject = Light | Group;
 
@@ -30,27 +28,6 @@ export type Light = {
   color: Color;
 };
 
-export function createLight(light: Tradfri.Accessory): Light {
-  if (light.type !== Tradfri.AccessoryTypes.lightbulb)
-    throw new Error(`Unexpected type "${light.type}", expecting "${Tradfri.AccessoryTypes.lightbulb}" for a Light`);
-  if (light.lightList.length !== 1)
-    throw new Error(`Unexpected lightList length "${light.lightList.length}" for instanceId "${light.instanceId}"`);
-  return {
-    type: 'LIGHT',
-    id: light.instanceId,
-    name: light.name,
-    model: light.deviceInfo.modelNumber,
-    power: light.deviceInfo.power,
-    alive: light.alive,
-    on: light.lightList[0].onOff,
-    dimmer: light.lightList[0].dimmer,
-    color:
-      'hue' in light.lightList[0]
-        ? { space: 'rgb', hue: light.lightList[0].hue, saturation: light.lightList[0].saturation }
-        : { space: 'white', temperature: light.lightList[0].colorTemperature },
-  };
-}
-
 export type Group = {
   type: 'GROUP';
   id: number;
@@ -60,13 +37,7 @@ export type Group = {
   devices: number[];
 };
 
-export function createGroup(group: Tradfri.Group): Group {
-  return {
-    type: 'GROUP',
-    id: group.instanceId,
-    name: group.name,
-    on: group.onOff,
-    dimmer: group.dimmer,
-    devices: group.deviceIDs,
-  };
-}
+export const is = {
+  Light: (x: any): x is Light => typeof x === 'object' && x.type === 'LIGHT',
+  Group: (x: any): x is Group => typeof x === 'object' && x.type === 'GROUP',
+};

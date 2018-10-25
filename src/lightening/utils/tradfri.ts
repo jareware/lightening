@@ -2,7 +2,8 @@ import * as Tradfri from 'node-tradfri-client'; // @see https://github.com/AlCal
 import { NO_LOGGING } from 'lightening/utils/logging';
 import { Config } from 'lightening/utils/config';
 import { EventEmitter } from 'events';
-import { WorldState, TradfriObject, createLight, createGroup } from 'lightening/utils/model';
+import { WorldState, TradfriObject } from 'lightening/utils/model';
+import { createGroup, createLight } from 'lightening/server/utils/model';
 
 interface WorldStateEmitter extends EventEmitter {
   on(event: 'change', callback: (newWorldState: WorldState) => void): this;
@@ -65,6 +66,17 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
         .then(x => {
           if (x instanceof Tradfri.Group) {
             return x.toggle(!x.onOff);
+          } else {
+            throw new Error(`Didn't find group "${id}"`);
+          }
+        });
+    },
+    setGroup(id: number, setOn: boolean) {
+      return Promise.resolve()
+        .then(() => tradfriLookup[id])
+        .then(x => {
+          if (x instanceof Tradfri.Group) {
+            return x.toggle(setOn);
           } else {
             throw new Error(`Didn't find group "${id}"`);
           }

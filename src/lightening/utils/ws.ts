@@ -36,6 +36,11 @@ export function createWebSocketServer(
           tradfri
             .toggleGroup(parsed.toggleGroup)
             .then(res => log.info('Group toggle succeeded', res), err => log.warn('Group toggle failed', err));
+        } else if (typeof parsed.setGroup === 'number') {
+          log.info(`Will set group ${parsed.setOn ? 'ON' : 'OFF'}:`, parsed.setGroup);
+          tradfri
+            .setGroup(parsed.setGroup, parsed.setOn)
+            .then(res => log.info('Group toggle succeeded', res), err => log.warn('Group toggle failed', err));
         } else {
           log.warn('Received well-formed but non-standard message from client');
         }
