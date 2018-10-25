@@ -7,7 +7,7 @@ COPY package.json /app
 COPY package-lock.json /app
 COPY tsconfig.json /app
 
-RUN npm install
+RUN npm install --production
 
 COPY src /app/src
 
