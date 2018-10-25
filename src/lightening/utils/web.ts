@@ -6,7 +6,11 @@ import { createServer } from 'http';
 export function createWebServer(config: Config, log = NO_LOGGING) {
   log.info(`Starting static file server`, config);
 
-  var file = new Static.Server(config.LIGHTENING_WEB_ROOT, { cache: false });
+  var file = new Static.Server(config.LIGHTENING_WEB_ROOT, {
+    // https://www.npmjs.com/package/node-static
+    cache: false,
+    headers: { 'Cache-Control': 'no-store, must-revalidate' },
+  });
 
   createServer((request, response) =>
     request
