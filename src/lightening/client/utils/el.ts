@@ -68,6 +68,7 @@ export const p: ElFactory<'p'> = el.bind(null, 'p');
 export const pre: ElFactory<'pre'> = el.bind(null, 'pre');
 export const select: ElFactory<'select'> = el.bind(null, 'select');
 export const span: ElFactory<'span'> = el.bind(null, 'span');
+export const div: ElFactory<'div'> = el.bind(null, 'div');
 export const table: ElFactory<'table'> = el.bind(null, 'table');
 export const tbody: ElFactory<'tbody'> = el.bind(null, 'tbody');
 export const td: ElFactory<'td'> = el.bind(null, 'td');
