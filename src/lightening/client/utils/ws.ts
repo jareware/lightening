@@ -17,6 +17,7 @@ export function createWsClient(url: string, callback: (ws: WorldState) => void, 
   };
 
   function connect() {
+    log.info('WebSocket connecting...');
     socket = new WebSocket(url);
     socket.addEventListener('open', onOpen);
     socket.addEventListener('close', onClose);
@@ -30,6 +31,7 @@ export function createWsClient(url: string, callback: (ws: WorldState) => void, 
 
   function onClose() {
     log.info('WebSocket closed');
+    setTimeout(connect, 3000);
   }
 
   function onError(err: Event) {
