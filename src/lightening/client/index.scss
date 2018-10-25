@@ -3,7 +3,8 @@ body {
   font-size: 12px;
 }
 
-.on {
+.on,
+.lightening-GroupTable-on {
   font-weight: bold;
 }
 
@@ -13,4 +14,8 @@ body {
 
 li {
   padding: 20px;
+}
+
+button {
+  padding: 10px 20px;
 }

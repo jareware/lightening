@@ -13,6 +13,7 @@ export default (state: WorldState, ws: WebSocketClient) =>
         th('ID'),
         th('Name'),
         th('Devices'),
+        th('On'),
       ),
     ),
     tbody(
@@ -24,6 +25,7 @@ export default (state: WorldState, ws: WebSocketClient) =>
             td(group.id),
             td(group.name),
             td(group.devices.length),
+            td(group.on ? 'On' : ''),
             td(button('On', { click: () => setLights(ws, group, true) })),
             td(button('Off', { click: () => setLights(ws, group, false) })),
           ),
