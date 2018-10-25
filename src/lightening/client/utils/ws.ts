@@ -2,11 +2,41 @@ import { WorldState } from 'lightening/utils/model';
 import { NO_LOGGING } from 'lightening/utils/logging';
 
 export function createWsClient(url: string, callback: (ws: WorldState) => void, log = NO_LOGGING) {
-  const socket = new WebSocket(url);
-  socket.addEventListener('open', () => log.info('WebSocket opened'));
-  socket.addEventListener('close', () => log.info('WebSocket closed'));
-  socket.addEventListener('error', err => log.warn('WebSocket error', err));
-  socket.addEventListener('message', evt => {
+  let socket: WebSocket | null = null;
+
+  connect();
+
+  return {
+    send(message: object) {
+      if (socket) {
+        socket.send(JSON.stringify(message, null, 2));
+      } else {
+        log.warn("WebSocket isn't connected, can't send message", message);
+      }
+    },
+  };
+
+  function connect() {
+    socket = new WebSocket(url);
+    socket.addEventListener('open', onOpen);
+    socket.addEventListener('close', onClose);
+    socket.addEventListener('error', onError);
+    socket.addEventListener('message', onMessage);
+  }
+
+  function onOpen() {
+    log.info('WebSocket opened');
+  }
+
+  function onClose() {
+    log.info('WebSocket closed');
+  }
+
+  function onError(err: Event) {
+    log.warn('WebSocket error', err);
+  }
+
+  function onMessage(evt: MessageEvent) {
     const message = JSON.parse(evt.data);
     log.debug('WebSocket message', message);
     if (message.type === 'WORLD_STATE_UPDATE') {
@@ -14,11 +44,5 @@ export function createWsClient(url: string, callback: (ws: WorldState) => void, 
     } else {
       log.warn('Received unsupported message type', message);
     }
-  });
-
-  return {
-    send(message: object) {
-      socket.send(JSON.stringify(message, null, 2));
-    },
-  };
+  }
 }
