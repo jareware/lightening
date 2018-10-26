@@ -1,9 +1,9 @@
-import { WorldState } from 'lightening/utils/model';
 import { NO_LOGGING } from 'lightening/utils/logging';
+import { ServerState } from 'lightening/model/state';
 
 export type WebSocketClient = ReturnType<typeof createWsClient>;
 
-export function createWsClient(url: string, callback: (ws: WorldState) => void, log = NO_LOGGING) {
+export function createWsClient(url: string, callback: (ws: ServerState) => void, log = NO_LOGGING) {
   let socket: WebSocket | null = null;
 
   connect();

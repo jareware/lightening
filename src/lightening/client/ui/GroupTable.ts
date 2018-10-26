@@ -1,10 +1,11 @@
-import { WorldState, is } from 'lightening/utils/model';
 import { table, thead, tr, th, tbody, td, button } from 'lightening/client/utils/el';
 import { values } from 'lightening/utils/data';
 import { WebSocketClient } from 'lightening/client/utils/ws';
 import { setLights } from 'lightening/client/actions/lights';
+import { ServerState } from 'lightening/model/state';
+import { is } from 'lightening/model/utils';
 
-export default (state: WorldState, ws: WebSocketClient) =>
+export default (state: ServerState, ws: WebSocketClient) =>
   table(
     { class: 'lightening-GroupTable' },
     thead(

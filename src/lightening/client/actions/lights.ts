@@ -1,6 +1,6 @@
 import { WebSocketClient } from 'lightening/client/utils/ws';
-import { Light, Group } from 'lightening/utils/model';
 import { assertExhausted } from 'lightening/utils/types';
+import { Light, Group } from 'lightening/model/tradfri';
 
 export function toggleLights(ws: WebSocketClient, object: Light | Group) {
   switch (object.type) {

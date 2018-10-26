@@ -2,11 +2,12 @@ import * as Tradfri from 'node-tradfri-client'; // @see https://github.com/AlCal
 import { NO_LOGGING } from 'lightening/utils/logging';
 import { Config } from 'lightening/utils/config';
 import { EventEmitter } from 'events';
-import { WorldState, TradfriObject } from 'lightening/utils/model';
 import { createGroup, createLight } from 'lightening/server/utils/model';
+import { ServerState } from 'lightening/model/state';
+import { Device } from 'lightening/model/tradfri';
 
 interface WorldStateEmitter extends EventEmitter {
-  on(event: 'change', callback: (newWorldState: WorldState) => void): this;
+  on(event: 'change', callback: (newWorldState: ServerState) => void): this;
 }
 
 export function createTradfriClient(config: Config, log = NO_LOGGING) {
@@ -15,7 +16,7 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
   const tradfri = new Tradfri.TradfriClient(config.LIGHTENING_TRADFRI_HOSTNAME);
   const events: WorldStateEmitter = new EventEmitter();
 
-  let world: WorldState = {
+  let state: ServerState = {
     objects: {},
   };
 
@@ -84,7 +85,7 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
     },
   };
 
-  function convert(x: Tradfri.Group | Tradfri.Accessory): TradfriObject | null {
+  function convert(x: Tradfri.Group | Tradfri.Accessory): Device | null {
     if (x instanceof Tradfri.Group) {
       tradfriLookup[x.instanceId] = x;
       return createGroup(x);
@@ -99,13 +100,13 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
     return null;
   }
 
-  function update(object: TradfriObject | null) {
+  function update(object: Device | null) {
     if (!object) {
       log.debug('Ignoring empty world update');
       return;
     }
     log.debug(`${object.type}#${object.id} changed`);
-    world = { ...world, objects: { ...world.objects, [object.id]: object } };
-    events.emit('change', world);
+    state = { ...state, objects: { ...state.objects, [object.id]: object } };
+    events.emit('change', state);
   }
 }

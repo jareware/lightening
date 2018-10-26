@@ -1,8 +1,8 @@
 import WebSocket from 'ws';
-import { WorldState } from 'lightening/utils/model';
 import { NO_LOGGING } from 'lightening/utils/logging';
 import { Config } from 'lightening/utils/config';
 import { createTradfriClient } from 'lightening/utils/tradfri';
+import { ServerState } from 'lightening/model/state';
 
 export function createWebSocketServer(
   config: Config,
@@ -12,7 +12,7 @@ export function createWebSocketServer(
   const wss = new WebSocket.Server({ port: config.LIGHTENING_WEBSOCKET_PORT });
 
   let connections: WebSocket[] = [];
-  let latest: WorldState | null = null;
+  let latest: ServerState | null = null;
 
   wss.on('connection', ws => {
     log.info('Client connected');
@@ -57,13 +57,13 @@ export function createWebSocketServer(
   });
 
   return {
-    emitWorldState(newWorldState: WorldState) {
+    emitWorldState(newWorldState: ServerState) {
       latest = newWorldState;
       connections.forEach(connection => emitWorldState(connection, newWorldState));
     },
   };
 
-  function emitWorldState(ws: WebSocket, state: WorldState) {
+  function emitWorldState(ws: WebSocket, state: ServerState) {
     ws.send(JSON.stringify({ type: 'WORLD_STATE_UPDATE', state }, null, 2));
   }
 }

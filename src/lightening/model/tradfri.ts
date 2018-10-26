@@ -1,7 +1,4 @@
-export type LighteningModel = WorldState | Light | Group;
-export type TradfriObject = Light | Group;
-
-export type WorldState = { objects: { [id: string]: TradfriObject } };
+export type Device = Light | Group;
 
 export type WhiteColor = {
   space: 'white';
@@ -35,9 +32,4 @@ export type Group = {
   on: boolean;
   dimmer: number;
   devices: number[];
-};
-
-export const is = {
-  Light: (x: any): x is Light => typeof x === 'object' && x.type === 'LIGHT',
-  Group: (x: any): x is Group => typeof x === 'object' && x.type === 'GROUP',
 };
