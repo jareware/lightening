@@ -8,10 +8,10 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "baseUrl": ".",
+    "baseUrl": "../..",
     "esModuleInterop": true,
     "paths": {
-      "lightening/*": ["./src/lightening/*"]
+      "lightening/*": ["./lightening/*"]
     }
   }
 }
