@@ -1,4 +1,4 @@
-import { Device } from 'lightening/model/tradfri';
+import { Device } from 'lightening/shared/model/tradfri';
 
 export type ClientState = {};
 

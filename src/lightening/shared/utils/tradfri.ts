@@ -1,10 +1,10 @@
 import * as Tradfri from 'node-tradfri-client'; // @see https://github.com/AlCalzone/node-tradfri-client
-import { NO_LOGGING } from 'lightening/utils/logging';
-import { Config } from 'lightening/utils/config';
+import { NO_LOGGING } from 'lightening/shared/utils/logging';
+import { Config } from 'lightening/shared/utils/config';
 import { EventEmitter } from 'events';
 import { createGroup, createLight } from 'lightening/server/utils/model';
-import { ServerState } from 'lightening/model/state';
-import { Device } from 'lightening/model/tradfri';
+import { ServerState } from 'lightening/shared/model/state';
+import { Device } from 'lightening/shared/model/tradfri';
 
 interface WorldStateEmitter extends EventEmitter {
   on(event: 'change', callback: (newWorldState: ServerState) => void): this;

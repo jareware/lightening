@@ -1,9 +1,9 @@
 import { table, thead, tr, th, tbody, td, button } from 'lightening/client/utils/el';
-import { values } from 'lightening/utils/data';
+import { values } from 'lightening/shared/utils/data';
 import { WebSocketClient } from 'lightening/client/utils/ws';
 import { setLights } from 'lightening/client/actions/lights';
-import { ServerState } from 'lightening/model/state';
-import { is } from 'lightening/model/utils';
+import { ServerState } from 'lightening/shared/model/state';
+import { is } from 'lightening/shared/model/utils';
 
 export default (state: ServerState, ws: WebSocketClient) =>
   table(

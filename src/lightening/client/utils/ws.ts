@@ -1,5 +1,5 @@
-import { NO_LOGGING } from 'lightening/utils/logging';
-import { ServerState } from 'lightening/model/state';
+import { NO_LOGGING } from 'lightening/shared/utils/logging';
+import { ServerState } from 'lightening/shared/model/state';
 
 export type WebSocketClient = ReturnType<typeof createWsClient>;
 

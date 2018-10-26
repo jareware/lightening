@@ -1,4 +1,4 @@
-import { Light, Group } from 'lightening/model/tradfri';
+import { Light, Group } from 'lightening/shared/model/tradfri';
 
 export const is = {
   Light: (x: any): x is Light => typeof x === 'object' && x.type === 'LIGHT',

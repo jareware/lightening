@@ -1,8 +1,8 @@
-import { createTradfriClient } from 'lightening/utils/tradfri';
-import { readConfigFromEnv } from 'lightening/utils/config';
-import { createConsoleLogger } from 'lightening/utils/logging';
-import { createWebSocketServer } from 'lightening/utils/ws';
-import { createWebServer } from 'lightening/utils/web';
+import { createTradfriClient } from 'lightening/shared/utils/tradfri';
+import { readConfigFromEnv } from 'lightening/shared/utils/config';
+import { createConsoleLogger } from 'lightening/shared/utils/logging';
+import { createWebSocketServer } from 'lightening/shared/utils/ws';
+import { createWebServer } from 'lightening/shared/utils/web';
 
 const log = createConsoleLogger();
 const config = readConfigFromEnv();

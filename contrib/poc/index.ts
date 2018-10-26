@@ -1,4 +1,4 @@
-import { readConfigFromEnv } from 'lightening/utils/config';
+import { readConfigFromEnv } from 'lightening/shared/utils/config';
 import { TradfriClient, Accessory, Group, AccessoryTypes } from 'node-tradfri-client';
 import Table from 'cli-table';
 import { get } from 'lodash';

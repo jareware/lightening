@@ -1,5 +1,5 @@
 import * as Tradfri from 'node-tradfri-client'; // @see https://github.com/AlCalzone/node-tradfri-client
-import { Light, Group } from 'lightening/model/tradfri';
+import { Light, Group } from 'lightening/shared/model/tradfri';
 
 export function createLight(light: Tradfri.Accessory): Light {
   if (light.type !== Tradfri.AccessoryTypes.lightbulb)
