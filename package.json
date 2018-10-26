@@ -10,7 +10,7 @@
     "==================== COMMON ====================": "",
     "lint": "echo lint-versions lint-ts lint-prettier | parallel --delimiter ' ' --trim npm run --silent {}",
     "lint-versions": "check-node-version --package",
-    "lint-ts": "for project in $(find src -name tsconfig.json); do tsc --noEmit --project $project; done",
+    "lint-ts": "find src -name tsconfig.json | parallel --trim tsc --noEmit --project {}",
     "lint-prettier": "prettier --list-different '**/*.ts'",
     "lint-watch": "chokidar '**/*.ts' --ignore node_modules --debounce 100 --initial --command 'npm run --silent lint'",
     "lint-fix": "prettier --write '**/*.ts'",
