@@ -48,7 +48,7 @@ export function el(...args: any[]) {
           }
         });
       }
-    } else if (['string', 'number', 'boolean'].indexOf(typeof arg) >= 0) {
+    } else if (['string', 'number'].indexOf(typeof arg) >= 0) {
       node.textContent = arg;
     }
   });
