@@ -1,7 +1,7 @@
 import { createTradfriClient } from 'lightening/shared/utils/tradfri';
 import { readConfigFromEnv } from 'lightening/shared/utils/config';
 import { createConsoleLogger } from 'lightening/shared/utils/logging';
-import { createWebSocketServer } from 'lightening/shared/utils/ws';
+import { createWebSocketServer } from 'lightening/server/utils/ws';
 import { createWebServer } from 'lightening/shared/utils/web';
 
 const log = createConsoleLogger();
