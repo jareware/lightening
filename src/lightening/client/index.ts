@@ -1,14 +1,18 @@
-import { el } from 'lightening/client/utils/el';
+import { el, pre } from 'lightening/client/utils/el';
 import { createWsClient } from 'lightening/client/utils/ws';
 import { createConsoleLogger } from 'lightening/shared/utils/logging';
 import GroupTable from 'lightening/client/ui/GroupTable';
-import { ServerState } from 'lightening/shared/model/state';
+import { GlobalState } from 'lightening/shared/model/state';
 
 const log = createConsoleLogger();
 const wsUrl = location.protocol.replace(/^http/, 'ws') + '//' + location.hostname + ':' + 8081;
 const ws = createWsClient(wsUrl, render, log);
 
-function render(state: ServerState) {
+function render(state: GlobalState) {
   document.body.innerHTML = '';
-  el(document.body, GroupTable(state, ws));
+  el(
+    document.body,
+    !state.clientState.webSocketConnected && pre('Connecting...'),
+    state.serverState && GroupTable(state.serverState, ws),
+  );
 }

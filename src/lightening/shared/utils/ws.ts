@@ -3,6 +3,7 @@ import { NO_LOGGING } from 'lightening/shared/utils/logging';
 import { Config } from 'lightening/shared/utils/config';
 import { createTradfriClient } from 'lightening/shared/utils/tradfri';
 import { ServerState } from 'lightening/shared/model/state';
+import { encodeWebSocketMessage } from 'lightening/shared/model/utils';
 
 export function createWebSocketServer(
   config: Config,
@@ -64,6 +65,6 @@ export function createWebSocketServer(
   };
 
   function emitWorldState(ws: WebSocket, state: ServerState) {
-    ws.send(JSON.stringify({ type: 'WORLD_STATE_UPDATE', state }, null, 2));
+    ws.send(encodeWebSocketMessage({ type: 'ServerStateUpdate', state }));
   }
 }
