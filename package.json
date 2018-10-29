@@ -12,7 +12,7 @@
     "lint-versions": "check-node-version --package",
     "lint-ts": "find src -name tsconfig.json | parallel --trim tsc --noEmit --project {}",
     "lint-prettier": "prettier --list-different '**/*.ts'",
-    "lint-watch": "chokidar '**/*.ts' --ignore node_modules --debounce 100 --initial --command 'npm run --silent lint'",
+    "lint-watch": "chokidar '**/*.ts' --ignore node_modules --debounce 100 --initial --command 'echo -n Linting...\\ && npm run --silent lint && echo OK'",
     "lint-fix": "prettier --write '**/*.ts'",
     "==================== CLIENT ====================": "",
     "client-build": "npm run client-js-build && npm run client-css-build",
