@@ -1,6 +1,8 @@
 import { NO_LOGGING } from 'lightening/shared/utils/logging';
 import { GlobalState, ServerState, ClientState } from 'lightening/shared/model/state';
-import { decodeWebSocketMessage } from 'lightening/shared/model/utils';
+import { decode, encode } from 'lightening/shared/model/utils';
+import { WebSocketMessageFromServer, WebSocketMessageFromClient } from 'lightening/shared/model/message';
+import { assertExhausted } from 'lightening/shared/utils/types';
 
 export type WebSocketClient = ReturnType<typeof createWsClient>;
 
@@ -12,9 +14,9 @@ export function createWsClient(url: string, callback: (state: GlobalState) => vo
   connect();
 
   return {
-    send(message: object) {
+    send(message: WebSocketMessageFromClient) {
       if (socket) {
-        socket.send(JSON.stringify(message, null, 2));
+        socket.send(encode<WebSocketMessageFromClient>(message));
       } else {
         log.warn("WebSocket isn't connected, can't send message", message);
       }
@@ -47,12 +49,13 @@ export function createWsClient(url: string, callback: (state: GlobalState) => vo
   }
 
   function onMessage(evt: MessageEvent) {
-    const message = decodeWebSocketMessage(evt.data);
+    const message = decode<WebSocketMessageFromServer>(evt.data);
     log.debug('WebSocket message', message);
     latestClientState = { ...latestClientState, webSocketConnected: true };
     if (message.type === 'ServerStateUpdate') {
       latestServerState = message.state;
     } else {
+      assertExhausted(message.type);
       log.warn('Received unsupported message type', message);
     }
   }

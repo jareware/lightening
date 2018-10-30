@@ -1,15 +1,17 @@
 import { ServerState } from 'lightening/shared/model/state';
 
-export type WebSocketMessage =
-  | {
-      type: 'ServerStateUpdate';
-      state: ServerState;
-    }
-  | {
-      type: 'ClientCommand';
-      command: {
-        type: 'SetLightState';
-        targetIds: string[];
-        on: true | false | 'toggle';
-      };
-    };
+export type WebSocketMessageFromServer = {
+  type: 'ServerStateUpdate';
+  state: ServerState;
+};
+
+export type WebSocketMessageFromClient = {
+  type: 'ClientCommand';
+  command: {
+    type: 'SetLightState';
+    targetIds: number[];
+    on: true | false | 'toggle';
+  };
+};
+
+export type WebSocketMessage = WebSocketMessageFromClient | WebSocketMessageFromServer;

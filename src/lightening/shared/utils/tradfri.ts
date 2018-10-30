@@ -50,38 +50,15 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
 
   return {
     events,
-    toggleLight(id: number) {
-      return Promise.resolve()
-        .then(() => tradfriLookup[id])
-        .then(x => {
-          if (x instanceof Tradfri.Accessory && x.type === Tradfri.AccessoryTypes.lightbulb) {
-            return x.lightList[0].toggle();
-          } else {
-            throw new Error(`Didn't find light "${id}"`);
-          }
-        });
-    },
-    toggleGroup(id: number) {
-      return Promise.resolve()
-        .then(() => tradfriLookup[id])
-        .then(x => {
-          if (x instanceof Tradfri.Group) {
-            return x.toggle(!x.onOff);
-          } else {
-            throw new Error(`Didn't find group "${id}"`);
-          }
-        });
-    },
-    setGroup(id: number, setOn: boolean) {
-      return Promise.resolve()
-        .then(() => tradfriLookup[id])
-        .then(x => {
-          if (x instanceof Tradfri.Group) {
-            return x.toggle(setOn);
-          } else {
-            throw new Error(`Didn't find group "${id}"`);
-          }
-        });
+    setLightState(id: number, setOn: boolean) {
+      const light = tradfriLookup[id];
+      if (light instanceof Tradfri.Accessory && light.type === Tradfri.AccessoryTypes.lightbulb) {
+        light.lightList[0].toggle(setOn);
+      } else if (light instanceof Tradfri.Group) {
+        light.toggle(setOn);
+      } else {
+        throw new Error(`Didn't find Trådfri Light/Group with ID "${id}"`);
+      }
     },
   };
 

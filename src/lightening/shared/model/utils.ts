@@ -6,12 +6,15 @@ export const is = {
   Group: (x: any): x is Group => typeof x === 'object' && x.type === 'GROUP',
 };
 
-export function encodeWebSocketMessage(message: WebSocketMessage): string {
+export function encode<T extends WebSocketMessage>(message: T): string {
   return JSON.stringify(message, null, 2);
 }
 
-export function decodeWebSocketMessage(message: string): WebSocketMessage {
-  const any = JSON.parse(message);
+export function decode<T extends WebSocketMessage>(message: string | Buffer | ArrayBuffer | Buffer[]): T {
+  if (typeof message !== 'string') {
+    throw new Error(`Unexpected runtime type for WebSocketMessage while decoding: ${typeof message}`);
+  }
+  const any = JSON.parse(message + '');
   if (any && typeof any === 'object' && any['type']) {
     return any;
   } else {

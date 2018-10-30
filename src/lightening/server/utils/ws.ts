@@ -3,7 +3,9 @@ import { NO_LOGGING } from 'lightening/shared/utils/logging';
 import { Config } from 'lightening/shared/utils/config';
 import { createTradfriClient } from 'lightening/shared/utils/tradfri';
 import { ServerState } from 'lightening/shared/model/state';
-import { encodeWebSocketMessage } from 'lightening/shared/model/utils';
+import { encode, decode } from 'lightening/shared/model/utils';
+import { WebSocketMessageFromClient, WebSocketMessageFromServer } from 'lightening/shared/model/message';
+import { assertExhausted } from 'lightening/shared/utils/types';
 
 export function createWebSocketServer(
   config: Config,
@@ -24,29 +26,11 @@ export function createWebSocketServer(
     if (latest) emitWorldState(ws, latest);
 
     ws.on('message', message => {
-      log.debug('Message from client', message);
+      log.debug('Received raw message from client:', message);
       try {
-        const parsed = JSON.parse(message + '');
-        if (typeof parsed.toggleLight === 'number') {
-          log.info('Will toggle light:', parsed.toggleLight);
-          tradfri
-            .toggleLight(parsed.toggleLight)
-            .then(res => log.info('Light toggle succeeded', res), err => log.warn('Light toggle failed', err));
-        } else if (typeof parsed.toggleGroup === 'number') {
-          log.info('Will toggle group:', parsed.toggleGroup);
-          tradfri
-            .toggleGroup(parsed.toggleGroup)
-            .then(res => log.info('Group toggle succeeded', res), err => log.warn('Group toggle failed', err));
-        } else if (typeof parsed.setGroup === 'number') {
-          log.info(`Will set group ${parsed.setOn ? 'ON' : 'OFF'}:`, parsed.setGroup);
-          tradfri
-            .setGroup(parsed.setGroup, parsed.setOn)
-            .then(res => log.info('Group toggle succeeded', res), err => log.warn('Group toggle failed', err));
-        } else {
-          log.warn('Received well-formed but non-standard message from client');
-        }
+        messageReceived(decode<WebSocketMessageFromClient>(message));
       } catch (err) {
-        log.warn('Received malformed message from client');
+        log.warn(`Received malformed message from client (${err.message})`);
       }
     });
 
@@ -64,7 +48,30 @@ export function createWebSocketServer(
     },
   };
 
+  function messageReceived(message: WebSocketMessageFromClient): void {
+    switch (message.type) {
+      case 'ClientCommand':
+        processCommand(message.command);
+        log.info('Received command from client:', message);
+        break;
+      default:
+        assertExhausted(message.type);
+    }
+  }
+
+  function processCommand(command: WebSocketMessageFromClient['command']) {
+    switch (command.type) {
+      case 'SetLightState':
+        command.targetIds.forEach(id =>
+          tradfri.setLightState(id, typeof command.on === 'boolean' ? command.on : false),
+        );
+        break;
+      default:
+        assertExhausted(command.type);
+    }
+  }
+
   function emitWorldState(ws: WebSocket, state: ServerState) {
-    ws.send(encodeWebSocketMessage({ type: 'ServerStateUpdate', state }));
+    ws.send(encode<WebSocketMessageFromServer>({ type: 'ServerStateUpdate', state }));
   }
 }
