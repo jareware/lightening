@@ -1,0 +1,16 @@
+.lightening-GroupTable {
+  border-collapse: collapse;
+  width: 100%;
+
+  > tbody {
+    > tr > td {
+      padding: 10px;
+    }
+  }
+  &-on {
+    background: #ffeb3b;
+  }
+  &-mixed {
+    background: #d6d2b5;
+  }
+}

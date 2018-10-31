@@ -1,3 +1,5 @@
+@import 'ui/GroupTable';
+
 body {
   font-family: 'Lucida Grande', Tahoma, Verdana, Arial, Sans-Serif;
   font-size: 12px;
@@ -8,21 +10,4 @@ body {
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
-}
-
-.on,
-.lightening-GroupTable-on {
-  font-weight: bold;
-}
-
-.off {
-  background: gray;
-}
-
-li {
-  padding: 20px;
-}
-
-button {
-  padding: 10px 20px;
 }

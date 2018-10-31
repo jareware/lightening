@@ -1,4 +1,4 @@
-import { table, thead, tr, th, tbody, td, button } from 'lightening/client/utils/el';
+import { table, tr, tbody, td, button } from 'lightening/client/utils/el';
 import { values } from 'lightening/shared/utils/data';
 import { WebSocketClient } from 'lightening/client/utils/ws';
 import { setLights } from 'lightening/client/actions/lights';
@@ -9,27 +9,15 @@ import { Group } from 'lightening/shared/model/tradfri';
 export default (state: ServerState, ws: WebSocketClient) =>
   table(
     { class: 'lightening-GroupTable' },
-    thead(
-      tr(
-        // Must match order of <td>'s below
-        th('ID'),
-        th('Name'),
-        th('Devices'),
-        th('On'),
-      ),
-    ),
     tbody(
       values(state.objects)
         .filter(is.Group)
         .map(group =>
           tr(
-            { class: group.on ? 'lightening-GroupTable-on' : '' },
-            td(group.id),
+            { class: `lightening-GroupTable-${getOnOffState(group, state)}` },
             td(group.name),
-            td(group.devices.length),
-            td(getOnOffState(group, state)),
-            td(button('On', { click: () => setLights(ws, group, true) })),
-            td(button('Off', { click: () => setLights(ws, group, false) })),
+            td(button({ class: `lightening-GroupTable-button` }, 'On', { click: () => setLights(ws, group, true) })),
+            td(button({ class: `lightening-GroupTable-button` }, 'Off', { click: () => setLights(ws, group, false) })),
           ),
         ),
     ),
