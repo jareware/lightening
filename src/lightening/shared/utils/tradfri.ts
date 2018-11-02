@@ -2,7 +2,7 @@ import * as Tradfri from 'node-tradfri-client'; // @see https://github.com/AlCal
 import { NO_LOGGING } from 'lightening/shared/utils/logging';
 import { Config } from 'lightening/shared/utils/config';
 import { EventEmitter } from 'events';
-import { createGroup, createLight } from 'lightening/server/utils/model';
+import { createGroup, createLight, createRemote } from 'lightening/server/utils/model';
 import { ServerState } from 'lightening/shared/model/state';
 import { Device } from 'lightening/shared/model/tradfri';
 
@@ -70,6 +70,9 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
       if (x.type === Tradfri.AccessoryTypes.lightbulb) {
         tradfriLookup[x.instanceId] = x;
         return createLight(x);
+      } else if (x.type === Tradfri.AccessoryTypes.remote) {
+        tradfriLookup[x.instanceId] = x;
+        return createRemote(x);
       }
     }
     log.warn("Don't know what to do with Trådfri device:", { ...x, client: null }); // don't log the "client" property, because it's too noisy
