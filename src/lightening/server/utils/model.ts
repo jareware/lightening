@@ -2,6 +2,7 @@ import * as Tradfri from 'node-tradfri-client'; // @see https://github.com/AlCal
 import { Light, Group, Remote, Outlet } from 'lightening/shared/model/tradfri';
 
 export const TRADFRI_ACCESSORY_TYPE_OUTLET = 3; // for whatever reason, this isn't part of the Tradfri.AccessoryTypes enum
+export const TRADFRI_ACCESSORY_TYPE_REMOTE_SECONDARY = 1; // again, for reasons unknown, remotes which are paired with another remote have a separate type, not included in Tradfri.AccessoryTypes
 
 export function createLight(light: Tradfri.Accessory): Light {
   if (light.type !== Tradfri.AccessoryTypes.lightbulb)
@@ -25,8 +26,12 @@ export function createLight(light: Tradfri.Accessory): Light {
 }
 
 export function createRemote(remote: Tradfri.Accessory): Remote {
-  if (remote.type !== Tradfri.AccessoryTypes.remote)
-    throw new Error(`Unexpected type "${remote.type}", expecting "${Tradfri.AccessoryTypes.remote}" for a Remote`);
+  if (remote.type !== Tradfri.AccessoryTypes.remote && remote.type !== TRADFRI_ACCESSORY_TYPE_REMOTE_SECONDARY)
+    throw new Error(
+      `Unexpected type "${remote.type}", expecting "${
+        Tradfri.AccessoryTypes.remote
+      }" or "${TRADFRI_ACCESSORY_TYPE_REMOTE_SECONDARY}" for a Remote`,
+    );
   return {
     type: 'Remote',
     id: remote.instanceId,

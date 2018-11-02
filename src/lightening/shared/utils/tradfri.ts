@@ -8,6 +8,7 @@ import {
   createRemote,
   createOutlet,
   TRADFRI_ACCESSORY_TYPE_OUTLET,
+  TRADFRI_ACCESSORY_TYPE_REMOTE_SECONDARY,
 } from 'lightening/server/utils/model';
 import { ServerState } from 'lightening/shared/model/state';
 import { Device } from 'lightening/shared/model/tradfri';
@@ -76,7 +77,7 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
       if (x.type === Tradfri.AccessoryTypes.lightbulb) {
         tradfriLookup[x.instanceId] = x;
         return createLight(x);
-      } else if (x.type === Tradfri.AccessoryTypes.remote) {
+      } else if (x.type === Tradfri.AccessoryTypes.remote || x.type === TRADFRI_ACCESSORY_TYPE_REMOTE_SECONDARY) {
         tradfriLookup[x.instanceId] = x;
         return createRemote(x);
       } else if (x.type === TRADFRI_ACCESSORY_TYPE_OUTLET) {
