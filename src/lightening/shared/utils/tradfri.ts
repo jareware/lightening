@@ -17,7 +17,7 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
   const events: WorldStateEmitter = new EventEmitter();
 
   let state: ServerState = {
-    objects: {},
+    devices: {},
   };
 
   const tradfriLookup: {
@@ -76,13 +76,13 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
     return null;
   }
 
-  function update(object: Device | null) {
-    if (!object) {
+  function update(device: Device | null) {
+    if (!device) {
       log.debug('Ignoring empty world update');
       return;
     }
-    log.debug(`${object.type}#${object.id} changed`);
-    state = { ...state, objects: { ...state.objects, [object.id]: object } };
+    log.debug(`${device.type}#${device.id} changed`);
+    state = { ...state, devices: { ...state.devices, [device.id]: device } };
     events.emit('change', state);
   }
 }

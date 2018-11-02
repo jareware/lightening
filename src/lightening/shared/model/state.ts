@@ -10,5 +10,5 @@ export type ClientState = {
 };
 
 export type ServerState = {
-  objects: { [id: string]: Device };
+  devices: { [id: string]: Device };
 };

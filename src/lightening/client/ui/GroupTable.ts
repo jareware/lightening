@@ -10,7 +10,7 @@ export default (state: ServerState, ws: WebSocketClient) =>
   table(
     { class: 'lightening-GroupTable' },
     tbody(
-      values(state.objects)
+      values(state.devices)
         .filter(is.Group)
         .map(group =>
           tr(
@@ -25,7 +25,7 @@ export default (state: ServerState, ws: WebSocketClient) =>
 
 function getOnOffState(group: Group, state: ServerState) {
   const lightsOn = group.devices
-    .map(id => state.objects[id])
+    .map(id => state.devices[id])
     .filter(is.Light)
     .map(light => light.on);
   const isTrue = (x: boolean) => x === true;
