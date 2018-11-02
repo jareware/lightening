@@ -1,4 +1,4 @@
-export type Device = Light | Remote | Group;
+export type Device = Light | Remote | Outlet | Group;
 
 export type WhiteColor = {
   space: 'white';
@@ -32,6 +32,14 @@ export type Remote = {
   power: number;
   alive: boolean;
   battery: number;
+};
+
+export type Outlet = {
+  type: 'Outlet';
+  id: number;
+  name: string;
+  power: number;
+  alive: boolean;
 };
 
 export type Group = {
