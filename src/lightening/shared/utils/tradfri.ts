@@ -71,9 +71,8 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
         tradfriLookup[x.instanceId] = x;
         return createLight(x);
       }
-      return null;
     }
-    log.warn("Don't know what to do with:", x);
+    log.warn("Don't know what to do with Trådfri device:", { ...x, client: null }); // don't log the "client" property, because it's too noisy
     return null;
   }
 
