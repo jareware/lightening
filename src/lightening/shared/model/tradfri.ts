@@ -1,4 +1,5 @@
 export type Device = Light | Remote | Outlet | Sensor | Group;
+export type DeviceOfType<T extends Device['type']> = Extract<Device, { type: T }>;
 
 export type WhiteColor = {
   space: 'white';
