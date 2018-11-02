@@ -4,7 +4,7 @@ import { WebSocketClient } from 'lightening/client/utils/ws';
 import { setLights } from 'lightening/client/actions/lights';
 import { ServerState } from 'lightening/shared/model/state';
 import { is } from 'lightening/shared/model/utils';
-import { Group } from 'lightening/shared/model/tradfri';
+import { Group, Outlet, Light } from 'lightening/shared/model/tradfri';
 
 export default (state: ServerState, ws: WebSocketClient) =>
   table(
@@ -26,8 +26,8 @@ export default (state: ServerState, ws: WebSocketClient) =>
 function getOnOffState(group: Group, state: ServerState) {
   const lightsOn = group.devices
     .map(id => state.devices[id])
-    .filter(is.Light)
-    .map(light => light.on);
+    .filter((x): x is Light | Outlet => is.Light(x) || is.Outlet(x))
+    .map(device => device.on);
   const isTrue = (x: boolean) => x === true;
   const isFalse = (x: boolean) => x === false;
   if (lightsOn.some(isTrue)) {

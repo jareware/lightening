@@ -45,12 +45,15 @@ export function createRemote(remote: Tradfri.Accessory): Remote {
 export function createOutlet(outlet: Tradfri.Accessory): Outlet {
   if (outlet.type !== TRADFRI_ACCESSORY_TYPE_OUTLET)
     throw new Error(`Unexpected type "${outlet.type}", expecting "${TRADFRI_ACCESSORY_TYPE_OUTLET}" for an Outlet`);
+  if (outlet.plugList.length !== 1)
+    throw new Error(`Unexpected plugList length "${outlet.plugList.length}" for instanceId "${outlet.instanceId}"`);
   return {
     type: 'Outlet',
     id: outlet.instanceId,
     name: outlet.name,
     power: outlet.deviceInfo.power,
     alive: outlet.alive,
+    on: outlet.plugList[0].onOff,
   };
 }
 

@@ -40,6 +40,7 @@ export type Outlet = {
   name: string;
   power: number;
   alive: boolean;
+  on: boolean;
 };
 
 export type Sensor = {
