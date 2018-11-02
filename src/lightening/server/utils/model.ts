@@ -1,5 +1,5 @@
 import * as Tradfri from 'node-tradfri-client'; // @see https://github.com/AlCalzone/node-tradfri-client
-import { Light, Group, Remote, Outlet } from 'lightening/shared/model/tradfri';
+import { Light, Group, Remote, Outlet, Sensor } from 'lightening/shared/model/tradfri';
 
 export const TRADFRI_ACCESSORY_TYPE_OUTLET = 3; // for whatever reason, this isn't part of the Tradfri.AccessoryTypes enum
 export const TRADFRI_ACCESSORY_TYPE_REMOTE_SECONDARY = 1; // again, for reasons unknown, remotes which are paired with another remote have a separate type, not included in Tradfri.AccessoryTypes
@@ -51,6 +51,21 @@ export function createOutlet(outlet: Tradfri.Accessory): Outlet {
     name: outlet.name,
     power: outlet.deviceInfo.power,
     alive: outlet.alive,
+  };
+}
+
+export function createSensor(sensor: Tradfri.Accessory): Sensor {
+  if (sensor.type !== Tradfri.AccessoryTypes.motionSensor)
+    throw new Error(
+      `Unexpected type "${sensor.type}", expecting "${Tradfri.AccessoryTypes.motionSensor}" for a Sensor`,
+    );
+  return {
+    type: 'Sensor',
+    id: sensor.instanceId,
+    name: sensor.name,
+    power: sensor.deviceInfo.power,
+    alive: sensor.alive,
+    battery: sensor.deviceInfo.battery,
   };
 }
 

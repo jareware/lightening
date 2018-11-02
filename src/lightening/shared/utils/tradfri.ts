@@ -9,6 +9,7 @@ import {
   createOutlet,
   TRADFRI_ACCESSORY_TYPE_OUTLET,
   TRADFRI_ACCESSORY_TYPE_REMOTE_SECONDARY,
+  createSensor,
 } from 'lightening/server/utils/model';
 import { ServerState } from 'lightening/shared/model/state';
 import { Device } from 'lightening/shared/model/tradfri';
@@ -83,6 +84,9 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
       } else if (x.type === TRADFRI_ACCESSORY_TYPE_OUTLET) {
         tradfriLookup[x.instanceId] = x;
         return createOutlet(x);
+      } else if (x.type === Tradfri.AccessoryTypes.motionSensor) {
+        tradfriLookup[x.instanceId] = x;
+        return createSensor(x);
       }
     }
     log.warn("Don't know what to do with Trådfri device:", { ...x, client: null }); // don't log the "client" property, because it's too noisy

@@ -1,10 +1,11 @@
-import { Light, Group, Device, Remote, Outlet } from 'lightening/shared/model/tradfri';
+import { Light, Group, Device, Remote, Outlet, Sensor } from 'lightening/shared/model/tradfri';
 import { WebSocketMessage } from 'lightening/shared/model/message';
 
 export const is = {
   Light: (x: any): x is Light => typeof x === 'object' && (x.type as Device['type']) === 'Light',
   Remote: (x: any): x is Remote => typeof x === 'object' && (x.type as Device['type']) === 'Remote',
   Outlet: (x: any): x is Outlet => typeof x === 'object' && (x.type as Device['type']) === 'Outlet',
+  Sensor: (x: any): x is Sensor => typeof x === 'object' && (x.type as Device['type']) === 'Sensor',
   Group: (x: any): x is Group => typeof x === 'object' && (x.type as Device['type']) === 'Group',
 };
 

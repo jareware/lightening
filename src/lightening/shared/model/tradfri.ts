@@ -1,4 +1,4 @@
-export type Device = Light | Remote | Outlet | Group;
+export type Device = Light | Remote | Outlet | Sensor | Group;
 
 export type WhiteColor = {
   space: 'white';
@@ -40,6 +40,15 @@ export type Outlet = {
   name: string;
   power: number;
   alive: boolean;
+};
+
+export type Sensor = {
+  type: 'Sensor';
+  id: number;
+  name: string;
+  power: number;
+  alive: boolean;
+  battery: number;
 };
 
 export type Group = {
