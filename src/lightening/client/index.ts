@@ -9,10 +9,13 @@ const wsUrl = location.protocol.replace(/^http/, 'ws') + '//' + location.hostnam
 const ws = createWsClient(wsUrl, render, log);
 
 function render(state: GlobalState) {
+  const then = performance.now();
   document.body.innerHTML = '';
   el(
     document.body,
     !state.clientState.webSocketConnected && pre('Connecting...'),
     state.serverState && GroupTable(state.serverState, ws),
   );
+  const now = performance.now();
+  log.debug(`Rendering took ${(now - then).toFixed(1)} ms`);
 }
