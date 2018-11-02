@@ -4,8 +4,8 @@ import { Light, Group } from 'lightening/shared/model/tradfri';
 
 export function setLights(ws: WebSocketClient, device: Light | Group, setOn = true): void {
   switch (device.type) {
-    case 'LIGHT':
-    case 'GROUP':
+    case 'Light':
+    case 'Group':
       ws.send({
         type: 'ClientCommand',
         command: {

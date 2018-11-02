@@ -7,7 +7,7 @@ export function createLight(light: Tradfri.Accessory): Light {
   if (light.lightList.length !== 1)
     throw new Error(`Unexpected lightList length "${light.lightList.length}" for instanceId "${light.instanceId}"`);
   return {
-    type: 'LIGHT',
+    type: 'Light',
     id: light.instanceId,
     name: light.name,
     model: light.deviceInfo.modelNumber,
@@ -24,7 +24,7 @@ export function createLight(light: Tradfri.Accessory): Light {
 
 export function createGroup(group: Tradfri.Group): Group {
   return {
-    type: 'GROUP',
+    type: 'Group',
     id: group.instanceId,
     name: group.name,
     on: group.onOff,

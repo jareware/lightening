@@ -14,7 +14,7 @@ export type RgbColor = {
 export type Color = WhiteColor | RgbColor;
 
 export type Light = {
-  type: 'LIGHT';
+  type: 'Light';
   id: number;
   name: string;
   model: string;
@@ -26,7 +26,7 @@ export type Light = {
 };
 
 export type Group = {
-  type: 'GROUP';
+  type: 'Group';
   id: number;
   name: string;
   on: boolean;

@@ -1,9 +1,9 @@
-import { Light, Group } from 'lightening/shared/model/tradfri';
+import { Light, Group, Device } from 'lightening/shared/model/tradfri';
 import { WebSocketMessage } from 'lightening/shared/model/message';
 
 export const is = {
-  Light: (x: any): x is Light => typeof x === 'object' && x.type === 'LIGHT',
-  Group: (x: any): x is Group => typeof x === 'object' && x.type === 'GROUP',
+  Light: (x: any): x is Light => typeof x === 'object' && (x.type as Device['type']) === 'Light',
+  Group: (x: any): x is Group => typeof x === 'object' && (x.type as Device['type']) === 'Group',
 };
 
 export function encode<T extends WebSocketMessage>(message: T): string {
