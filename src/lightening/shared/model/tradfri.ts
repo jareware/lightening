@@ -1,4 +1,4 @@
-export type Device = Light | Remote | Outlet | Sensor | Group;
+export type Device = Light | Remote | Plug | Sensor | Group;
 export type DeviceOfType<T extends Device['type']> = Extract<Device, { type: T }>;
 
 export type WhiteColor = {
@@ -35,8 +35,8 @@ export type Remote = {
   battery: number;
 };
 
-export type Outlet = {
-  type: 'Outlet';
+export type Plug = {
+  type: 'Plug';
   id: number;
   name: string;
   power: number;

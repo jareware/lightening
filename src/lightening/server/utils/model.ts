@@ -1,5 +1,5 @@
 import * as Tradfri from 'node-tradfri-client'; // @see https://github.com/AlCalzone/node-tradfri-client
-import { Light, Group, Remote, Outlet, Sensor } from 'lightening/shared/model/tradfri';
+import { Light, Group, Remote, Plug, Sensor } from 'lightening/shared/model/tradfri';
 
 export const TRADFRI_ACCESSORY_TYPE_REMOTE_SECONDARY = 1; // again, for reasons unknown, remotes which are paired with another remote have a separate type, not included in Tradfri.AccessoryTypes
 
@@ -41,18 +41,18 @@ export function createRemote(remote: Tradfri.Accessory): Remote {
   };
 }
 
-export function createOutlet(outlet: Tradfri.Accessory): Outlet {
-  if (outlet.type !== Tradfri.AccessoryTypes.plug)
-    throw new Error(`Unexpected type "${outlet.type}", expecting "${Tradfri.AccessoryTypes.plug}" for an Outlet`);
-  if (outlet.plugList.length !== 1)
-    throw new Error(`Unexpected plugList length "${outlet.plugList.length}" for instanceId "${outlet.instanceId}"`);
+export function createPlug(plug: Tradfri.Accessory): Plug {
+  if (plug.type !== Tradfri.AccessoryTypes.plug)
+    throw new Error(`Unexpected type "${plug.type}", expecting "${Tradfri.AccessoryTypes.plug}" for an Plug`);
+  if (plug.plugList.length !== 1)
+    throw new Error(`Unexpected plugList length "${plug.plugList.length}" for instanceId "${plug.instanceId}"`);
   return {
-    type: 'Outlet',
-    id: outlet.instanceId,
-    name: outlet.name,
-    power: outlet.deviceInfo.power,
-    alive: outlet.alive,
-    on: outlet.plugList[0].onOff,
+    type: 'Plug',
+    id: plug.instanceId,
+    name: plug.name,
+    power: plug.deviceInfo.power,
+    alive: plug.alive,
+    on: plug.plugList[0].onOff,
   };
 }
 

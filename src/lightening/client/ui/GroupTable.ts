@@ -26,7 +26,7 @@ export default (state: ServerState, ws: WebSocketClient) =>
 function getOnOffState(group: Group, state: ServerState) {
   const lightsOn = group.devices
     .map(id => state.devices[id])
-    .filter(is('Light', 'Outlet'))
+    .filter(is('Light', 'Plug'))
     .map(device => device.on);
   const isTrue = (x: boolean) => x === true;
   const isFalse = (x: boolean) => x === false;

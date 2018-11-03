@@ -6,7 +6,7 @@ import {
   createGroup,
   createLight,
   createRemote,
-  createOutlet,
+  createPlug,
   TRADFRI_ACCESSORY_TYPE_REMOTE_SECONDARY,
   createSensor,
 } from 'lightening/server/utils/model';
@@ -82,7 +82,7 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
         return createRemote(x);
       } else if (x.type === Tradfri.AccessoryTypes.plug) {
         tradfriLookup[x.instanceId] = x;
-        return createOutlet(x);
+        return createPlug(x);
       } else if (x.type === Tradfri.AccessoryTypes.motionSensor) {
         tradfriLookup[x.instanceId] = x;
         return createSensor(x);
