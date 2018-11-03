@@ -62,9 +62,7 @@ export function createWebSocketServer(
   function processCommand(command: WebSocketMessageFromClient['command']) {
     switch (command.type) {
       case 'SetLightState':
-        command.targetIds.forEach(id =>
-          tradfri.setLightState(id, typeof command.on === 'boolean' ? command.on : false),
-        );
+        command.targetIds.forEach(id => tradfri.setLightState(id, command.on));
         break;
       default:
         assertExhausted(command.type);

@@ -12,6 +12,7 @@ import {
 } from 'lightening/server/utils/model';
 import { ServerState } from 'lightening/shared/model/state';
 import { Device } from 'lightening/shared/model/tradfri';
+import { LightStateCommand } from 'lightening/shared/model/message';
 
 interface WorldStateEmitter extends EventEmitter {
   on(event: 'change', callback: (newWorldState: ServerState) => void): this;
@@ -57,12 +58,16 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
 
   return {
     events,
-    setLightState(id: number, setOn: boolean) {
+    setLightState(id: number, setOn: LightStateCommand) {
       const light = tradfriLookup[id];
       if (light instanceof Tradfri.Accessory && light.type === Tradfri.AccessoryTypes.lightbulb) {
-        light.lightList[0].toggle(setOn);
+        light.lightList[0].toggle(typeof setOn === 'boolean' ? setOn : undefined);
       } else if (light instanceof Tradfri.Group) {
-        light.toggle(setOn);
+        if (typeof setOn === 'boolean') {
+          light.toggle(setOn);
+        } else {
+          light.toggle(!light.onOff);
+        }
       } else {
         throw new Error(`Didn't find Trådfri Light/Group with ID "${id}"`);
       }
