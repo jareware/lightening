@@ -1,4 +1,4 @@
-import { createTradfriClient } from 'lightening/shared/utils/tradfri';
+import { createTradfriClient } from 'lightening/server/utils/tradfri';
 import { readConfigFromEnv } from 'lightening/shared/utils/config';
 import { createConsoleLogger } from 'lightening/shared/utils/logging';
 import { createWebSocketServer } from 'lightening/server/utils/ws';

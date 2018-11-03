@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 import { NO_LOGGING } from 'lightening/shared/utils/logging';
 import { Config } from 'lightening/shared/utils/config';
-import { createTradfriClient } from 'lightening/shared/utils/tradfri';
+import { createTradfriClient } from 'lightening/server/utils/tradfri';
 import { ServerState } from 'lightening/shared/model/state';
 import { encode, decode } from 'lightening/shared/model/utils';
 import { WebSocketMessageFromClient, WebSocketMessageFromServer } from 'lightening/shared/model/message';
