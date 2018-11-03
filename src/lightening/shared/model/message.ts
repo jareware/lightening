@@ -5,12 +5,14 @@ export type WebSocketMessageFromServer = {
   state: ServerState;
 };
 
+export type LightStateCommand = true | false | 'toggle';
+
 export type WebSocketMessageFromClient = {
   type: 'ClientCommand';
   command: {
     type: 'SetLightState';
     targetIds: number[];
-    on: true | false | 'toggle';
+    on: LightStateCommand;
   };
 };
 

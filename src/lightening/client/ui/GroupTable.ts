@@ -5,23 +5,34 @@ import { setLights } from 'lightening/client/actions/lights';
 import { ServerState } from 'lightening/shared/model/state';
 import { is } from 'lightening/shared/model/utils';
 import { Group } from 'lightening/shared/model/tradfri';
+import { LightStateCommand } from 'lightening/shared/model/message';
 
-export default (state: ServerState, ws: WebSocketClient) =>
-  table(
+export default (state: ServerState, ws: WebSocketClient) => {
+  return table(
     { class: 'lightening-GroupTable' },
     tbody(
       values(state.devices)
         .filter(is('Group'))
         .map(group =>
           tr(
-            { class: `lightening-GroupTable-${getOnOffState(group, state)}` },
+            {
+              class: `lightening-GroupTable-${getOnOffState(group, state)}`,
+              click: set(group, 'toggle'),
+            },
             td(group.name),
-            td(button({ class: `lightening-GroupTable-button` }, 'On', { click: () => setLights(ws, group, true) })),
-            td(button({ class: `lightening-GroupTable-button` }, 'Off', { click: () => setLights(ws, group, false) })),
+            td(button({ class: `lightening-GroupTable-button`, click: set(group, true) }, 'On')),
+            td(button({ class: `lightening-GroupTable-button`, click: set(group, false) }, 'Off')),
           ),
         ),
     ),
   );
+  function set(group: Group, setOn: LightStateCommand) {
+    return (event: Event) => {
+      event.stopPropagation();
+      setLights(ws, group, setOn);
+    };
+  }
+};
 
 function getOnOffState(group: Group, state: ServerState) {
   const lightsOn = group.devices
