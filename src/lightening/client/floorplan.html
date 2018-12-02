@@ -6,19 +6,20 @@
     <title>Lightening</title>
   </head>
 
-  <body>
-    <img
-      src="floorplan.png"
-      style="
+  <body class="lightening-debug">
+    <img src="floorplan.png" />
+    <style>
+      img {
+        display: none;
+      }
+      .lightening-debug img {
         display: block;
         position: absolute;
         top: -115px;
         left: -320px;
         width: 1550px;
         opacity: 0.5;
-      "
-    />
-    <style>
+      }
       .wall {
         stroke: black;
         stroke-width: 15;
@@ -26,8 +27,15 @@
         stroke-linecap: butt;
         stroke-linejoin: miter;
       }
+      .lightening-debug .wall {
+        stroke: red;
+        stroke-width: 1;
+      }
       .wall.underline {
         stroke: lightgray;
+      }
+      .lightening-debug .wall.underline {
+        stroke: green;
       }
     </style>
     <svg
