@@ -62,6 +62,7 @@ export const img: ElFactory<'img'> = el.bind(null, 'img');
 export const input: ElFactory<'input'> = el.bind(null, 'input');
 export const label: ElFactory<'label'> = el.bind(null, 'label');
 export const li: ElFactory<'li'> = el.bind(null, 'li');
+export const object: ElFactory<'object'> = el.bind(null, 'object');
 export const ol: ElFactory<'ol'> = el.bind(null, 'ol');
 export const option: ElFactory<'option'> = el.bind(null, 'option');
 export const p: ElFactory<'p'> = el.bind(null, 'p');
