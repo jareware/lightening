@@ -27,6 +27,8 @@ CONTAINER="lightening"
   $SSH "source .env && docker run --name $CONTAINER -d -p 80:8080 -p 8081:8081 --env LIGHTENING_TRADFRI_HOSTNAME --env LIGHTENING_TRADFRI_IDENTITY --env LIGHTENING_TRADFRI_PSK $TAG"
 )
 
-echo
-echo "✅  Success"
-echo
+if [ "$?" = "0" ]; then
+  echo
+  echo "✅  Success"
+  echo
+fi
