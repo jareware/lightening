@@ -9,6 +9,8 @@ CONTAINER="lightening"
   set -ex
   # Make sure we have a clean working copy
   if [[ "$(git diff-index HEAD)" != "" ]]; then echo "Please run again with a clean working copy"; exit 1; fi
+  # Run basic QA steps
+  npm run lint
   # Run the builds locally, because they're a LOT faster than on the Pi
   npm run client-build
   npm run server-build
