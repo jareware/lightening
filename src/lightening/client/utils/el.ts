@@ -4,7 +4,8 @@ type EventHandlerMap = { [event in keyof HTMLElementEventMap]: (event: HTMLEleme
 type HtmlAttributeMap = { [attribute in HtmlAttribute]: string };
 type ElementProps = Partial<HtmlAttributeMap & EventHandlerMap>;
 type VarArg = ElementProps | ScalarArg | HTMLElement | FalsyArg | (HTMLElement | FalsyArg)[];
-type ElFactory<T extends keyof HTMLElementTagNameMap> = (...args: VarArg[]) => HTMLElementTagNameMap[T];
+type ValidTagMap = HTMLElementTagNameMap & SVGElementTagNameMap;
+type ElFactory<T extends keyof ValidTagMap> = (...args: VarArg[]) => ValidTagMap[T];
 
 // Convenience method 1: Create a text node
 export function el(tagName: '', textNodeContent: ScalarArg): Text;
@@ -69,6 +70,7 @@ export const p: ElFactory<'p'> = el.bind(null, 'p');
 export const pre: ElFactory<'pre'> = el.bind(null, 'pre');
 export const select: ElFactory<'select'> = el.bind(null, 'select');
 export const span: ElFactory<'span'> = el.bind(null, 'span');
+export const svg: ElFactory<'svg'> = el.bind(null, 'svg');
 export const div: ElFactory<'div'> = el.bind(null, 'div');
 export const table: ElFactory<'table'> = el.bind(null, 'table');
 export const tbody: ElFactory<'tbody'> = el.bind(null, 'tbody');
