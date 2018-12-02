@@ -18,6 +18,18 @@
         opacity: 0.5;
       "
     />
+    <style>
+      .wall {
+        stroke: black;
+        stroke-width: 15;
+        fill: transparent;
+        stroke-linecap: butt;
+        stroke-linejoin: miter;
+      }
+      .wall.underline {
+        stroke: lightgray;
+      }
+    </style>
     <svg
       style="position: absolute; top: 0; left: 0;"
       version="1.1"
@@ -26,18 +38,13 @@
       height="880"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <style>
-        .wall {
-          stroke: blue;
-          stroke-width: 15;
-          fill: transparent;
-          stroke-linecap: square;
-          stroke-linejoin: miter;
-        }
-      </style>
-
       <!-- Main walls -->
-      <path class="wall" d="M 32 27, L 32 845, L 821 845, L 662 27, Z"></path>
+      <path class="wall underline" d="M 32 27, v 818, h 790, L 662 27, Z"></path>
+      <path
+        class="wall"
+        d="M 32 27, v 818, h 790, L 662 27, Z"
+        stroke-dasharray="1086 55 507 94 26 50 57 160 5 54 147 160 181 50 34 107 85 93 18 49"
+      ></path>
     </svg>
   </body>
 </html>
