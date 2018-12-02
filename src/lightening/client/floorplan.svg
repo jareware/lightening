@@ -1,0 +1,82 @@
+<svg
+  style="position: absolute; top: 0; left: 0;"
+  version="1.1"
+  baseProfile="full"
+  width="1000"
+  height="880"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <style type="text/css">
+    img {
+      display: none;
+    }
+    .lightening-debug img {
+      display: block;
+      position: absolute;
+      top: -115px;
+      left: -320px;
+      width: 1550px;
+      opacity: 0.5;
+    }
+    .wall {
+      stroke: black;
+      stroke-width: 15;
+      fill: transparent;
+      stroke-linecap: butt;
+      stroke-linejoin: miter;
+    }
+    .lightening-debug .wall {
+      stroke: red;
+      stroke-width: 3;
+    }
+    .wall.underline {
+      stroke: lightgray;
+    }
+    .lightening-debug .wall.underline {
+      stroke: green;
+    }
+    .region {
+      fill: yellow;
+      opacity: 0.5;
+    }
+    .lightening-debug .region {
+      stroke: orange;
+      stroke-width: 10;
+    }
+  </style>
+
+  <path class="region" d="M 32 27 h 243 v 307 h -243 Z"></path>
+  <path class="region" d="M 32 335 h 198 v 148 h -198 Z"></path>
+  <path class="region" d="M 32 483 h 198 v 104 h 45 v 99 h -76 v 35 h -167 Z"></path>
+  <path class="region" d="M 32 720 h 168 v 127 h -168 Z"></path>
+  <path class="region" d="M 200 685 h 74 v 161 h -74 Z"></path>
+  <path class="region" d="M 274 585 h 154 l 82 60 v 90 h -51 v 113 h -185 Z"></path>
+  <path class="region" d="M 229 334 h 198 v 252 h -197 Z"></path>
+  <path class="region" d="M 274 27 h 388 l 60 308 h -448 Z"></path>
+  <path class="region" d="M 427 335 h 295 l 51 260 l -264 50 l -83 -61 Z"></path>
+  <path class="region" d="M 510 641 l 263 -48 l 49 253 h -362 v -113 h 50 Z"></path>
+  <path class="region" d="M 725 349 l 192 -36 l 50 249 l -195 33 Z"></path>
+
+  <path class="wall underline" d="M 32 27 v 818 h 790 L 662 27 Z"></path>
+  <path class="wall underline" d="M 274 27 v 308 h -241"></path>
+  <path class="wall underline" d="M 230 335 v 250 h 44 v 260"></path>
+  <path class="wall underline" d="M 32 456 h 46 v 27 h 80 v -27 h 72"></path>
+  <path class="wall underline" d="M 32 720 h 168"></path>
+  <path class="wall underline" d="M 773 594 l -263 46 v 93 h -111"></path>
+  <path class="wall underline" d="M 725 348 l 193 -34 l 48 248 l -194 32"></path>
+
+  <path
+    class="wall"
+    d="M 32 27 v 818 h 790 L 662 27 Z"
+    stroke-dasharray="1086 55 507 94 26 50 57 160 5 54 147 160 181 50 34 107 85 93 18 49"
+  ></path>
+  <path class="wall" d="M 274 27 v 308 h -241" stroke-dasharray="237 55 139 48"></path>
+  <path class="wall" d="M 230 335 v 250 h 44 v 260" stroke-dasharray="313 54 83 54"></path>
+  <path class="wall" d="M 32 456 h 46 v 27 h 80 v -27 h 72" stroke-dasharray="93 48 10000"></path>
+  <path class="wall" d="M 32 483 h 46 m 80 0 h 72"></path>
+  <path class="wall" d="M 32 720 h 168" stroke-dasharray="99 47"></path>
+  <path class="wall" d="M 273 685 h -73 v 160"></path>
+  <path class="wall" d="M 376 336 h 51 v 249 h -58"></path>
+  <path class="wall" d="M 773 594 l -263 46 v 93 h -111" stroke-dasharray="288 54"></path>
+  <path class="wall" d="M 460 734 v 111"></path>
+</svg>
