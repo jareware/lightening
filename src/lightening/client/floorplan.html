@@ -29,13 +29,21 @@
       }
       .lightening-debug .wall {
         stroke: red;
-        stroke-width: 1;
+        stroke-width: 3;
       }
       .wall.underline {
         stroke: lightgray;
       }
       .lightening-debug .wall.underline {
         stroke: green;
+      }
+      .region {
+        fill: yellow;
+        opacity: 0.5;
+      }
+      .lightening-debug .region {
+        stroke: orange;
+        stroke-width: 10;
       }
     </style>
     <svg
@@ -46,6 +54,18 @@
       height="880"
       xmlns="http://www.w3.org/2000/svg"
     >
+      <path class="region" d="M 32 27 h 243 v 307 h -243 Z"></path>
+      <path class="region" d="M 32 335 h 198 v 148 h -198 Z"></path>
+      <path class="region" d="M 32 483 h 198 v 104 h 45 v 99 h -76 v 35 h -167 Z"></path>
+      <path class="region" d="M 32 720 h 168 v 127 h -168 Z"></path>
+      <path class="region" d="M 200 685 h 74 v 161 h -74 Z"></path>
+      <path class="region" d="M 274 585 h 154 l 82 60 v 90 h -51 v 113 h -185 Z"></path>
+      <path class="region" d="M 229 334 h 198 v 252 h -197 Z"></path>
+      <path class="region" d="M 274 27 h 388 l 60 308 h -448 Z"></path>
+      <path class="region" d="M 427 335 h 295 l 51 260 l -264 50 l -83 -61 Z"></path>
+      <path class="region" d="M 510 641 l 263 -48 l 49 253 h -362 v -113 h 50 Z"></path>
+      <path class="region" d="M 725 349 l 192 -36 l 50 249 l -195 33 Z"></path>
+
       <path class="wall underline" d="M 32 27 v 818 h 790 L 662 27 Z"></path>
       <path class="wall underline" d="M 274 27 v 308 h -241"></path>
       <path class="wall underline" d="M 230 335 v 250 h 44 v 260"></path>
