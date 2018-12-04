@@ -23,6 +23,7 @@
       fill: transparent;
       stroke-linecap: butt;
       stroke-linejoin: miter;
+      pointer-events: none; /* even though walls are rendered on top of other things, make them click-through */
     }
     .lightening-debug .wall {
       stroke: red;
