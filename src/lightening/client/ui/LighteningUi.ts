@@ -18,7 +18,7 @@ export default (state: GlobalState, ws: WebSocketClient) => {
         if (!state.serverState) return;
         const target: HTMLElement | SVGElement | null = event.target;
         if (!target) return;
-        const id = target.getAttribute('lightening:id');
+        const id = target.getAttribute('lightening-id');
         if (!id) return;
         const group = state.serverState.devices[id];
         if (!is('Group')(group)) return;
