@@ -7,17 +7,6 @@
   xmlns:lightening="https://github.com/jareware/lightening"
 >
   <style type="text/css">
-    img {
-      display: none;
-    }
-    .lightening-debug img {
-      display: block;
-      position: absolute;
-      top: -115px;
-      left: -320px;
-      width: 1550px;
-      opacity: 0.5;
-    }
     .wall {
       stroke: black;
       stroke-width: 15;
@@ -26,23 +15,12 @@
       stroke-linejoin: miter;
       pointer-events: none; /* even though walls are rendered on top of other things, make them click-through */
     }
-    .lightening-debug .wall {
-      stroke: red;
-      stroke-width: 3;
-    }
     .wall.underline {
       stroke: lightgray;
-    }
-    .lightening-debug .wall.underline {
-      stroke: green;
     }
     .region {
       fill: yellow;
       opacity: 0.5;
-    }
-    .lightening-debug .region {
-      stroke: orange;
-      stroke-width: 10;
     }
   </style>
 
