@@ -14,7 +14,6 @@ export function createWebSocketServer(
   log = NO_LOGGING,
 ) {
   const wss = new WebSocket.Server({ port: config.LIGHTENING_WEBSOCKET_PORT });
-  const svgSrc = readFileSync(config.LIGHTENING_WEB_ROOT + '/floorplan.svg', 'utf8');
 
   let connections: WebSocket[] = [];
   let latest: ServerState | null = null;
@@ -27,6 +26,7 @@ export function createWebSocketServer(
 
     if (latest) emitWorldState(ws, latest);
 
+    const svgSrc = readFileSync(config.LIGHTENING_WEB_ROOT + '/floorplan.svg', 'utf8');
     ws.send(encode<WebSocketMessageFromServer>({ type: 'FloorPlanUpdate', svgSrc }));
 
     ws.on('message', message => {
