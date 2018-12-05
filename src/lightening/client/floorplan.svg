@@ -19,8 +19,11 @@
       stroke: lightgray;
     }
     .region {
-      fill: yellow;
       opacity: 0.5;
+      fill: transparent;
+    }
+    .region.lightening-on {
+      fill: yellow;
     }
   </style>
 
