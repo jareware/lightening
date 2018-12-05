@@ -22,7 +22,7 @@
       opacity: 0.5;
       fill: transparent;
     }
-    .region.lightening-on {
+    .region[lightening-on] {
       fill: yellow;
     }
   </style>

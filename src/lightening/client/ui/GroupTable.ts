@@ -34,7 +34,7 @@ export default (state: ServerState, ws: WebSocketClient) => {
   }
 };
 
-function getOnOffState(group: Group, state: ServerState) {
+export function getOnOffState(group: Group, state: ServerState) {
   const lightsOn = group.devices
     .map(id => state.devices[id])
     .filter(is('Light', 'Plug'))
