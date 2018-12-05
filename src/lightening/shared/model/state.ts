@@ -7,6 +7,7 @@ export type GlobalState = {
 
 export type ClientState = {
   webSocketConnected: boolean;
+  floorPlanSvg: null | string;
 };
 
 export type ServerState = {

@@ -9,7 +9,7 @@ export type WebSocketClient = ReturnType<typeof createWsClient>;
 export function createWsClient(url: string, callback: (state: GlobalState) => void, log = NO_LOGGING) {
   let socket: WebSocket | null = null;
   let latestServerState: ServerState | null = null;
-  let latestClientState: ClientState = { webSocketConnected: false };
+  let latestClientState: ClientState = { floorPlanSvg: '', webSocketConnected: false };
 
   connect();
 
@@ -52,11 +52,16 @@ export function createWsClient(url: string, callback: (state: GlobalState) => vo
     const message = decode<WebSocketMessageFromServer>(evt.data);
     log.debug('WebSocket message', message);
     latestClientState = { ...latestClientState, webSocketConnected: true };
-    if (message.type === 'ServerStateUpdate') {
-      latestServerState = message.state;
-    } else {
-      assertExhausted(message.type);
-      log.warn('Received unsupported message type', message);
+    switch (message.type) {
+      case 'ServerStateUpdate':
+        latestServerState = message.state;
+        break;
+      case 'FloorPlanUpdate':
+        latestClientState = { ...latestClientState, floorPlanSvg: message.svgSrc };
+        break;
+      default:
+        assertExhausted(message);
+        log.warn('Received unsupported message type', message);
     }
   }
 
