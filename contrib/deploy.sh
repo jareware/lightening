@@ -24,7 +24,7 @@ CONTAINER="lightening"
   # Relaunch the Docker container
   $SSH "docker stop $CONTAINER"
   $SSH "docker rm $CONTAINER"
-  $SSH "source .env && docker run --name $CONTAINER -d -p 80:8080 -p 8081:8081 --env LIGHTENING_TRADFRI_HOSTNAME --env LIGHTENING_TRADFRI_IDENTITY --env LIGHTENING_TRADFRI_PSK $TAG"
+  $SSH "source .env && docker run --name $CONTAINER -d -p 80:8080 -p 8081:8081 --restart always --env LIGHTENING_TRADFRI_HOSTNAME --env LIGHTENING_TRADFRI_IDENTITY --env LIGHTENING_TRADFRI_PSK $TAG"
 )
 
 if [ "$?" = "0" ]; then
