@@ -74,6 +74,10 @@ export function createWebSocketServer(
   }
 
   function emitWorldState(ws: WebSocket, state: ServerState) {
-    ws.send(encode<WebSocketMessageFromServer>({ type: 'ServerStateUpdate', state }));
+    try {
+      ws.send(encode<WebSocketMessageFromServer>({ type: 'ServerStateUpdate', state }));
+    } catch (err) {
+      log.warn(`WebSocket send failed (${err.message})`);
+    }
   }
 }
