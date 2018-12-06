@@ -23,7 +23,10 @@
     }
     .region {
       opacity: 0.5;
-      fill: transparent;
+      fill: #eaeaea;
+    }
+    .region:hover {
+      opacity: 0.8;
     }
     .region[lightening-on] {
       fill: yellow;
