@@ -49,7 +49,7 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
         tradfri
           .ping(timeout)
           .then(
-            () => log.debug(`Got ping from gateway (RTT ${Date.now() - then} ms)`),
+            res => log.debug(`Got ping from gateway (RTT ${Date.now() - then} ms): ${res}`),
             () => log.warn(`Gateway did not respond to ping (timeout ${timeout} ms)`),
           );
       }, 60 * 1000);
