@@ -29,9 +29,12 @@ CONTAINER="lightening"
   find src -name "*.js" | xargs rm
   # Build a new Docker image
   $SSH "cd $WC && docker build --file pi.Dockerfile --tag $TAG ."
+  # Stop & remove previous container, if needed
+  if [ "$($SSH docker ps -q -f name=$CONTAINER)" ]; then
+    $SSH "docker stop $CONTAINER"
+    $SSH "docker rm $CONTAINER"
+  fi
   # Relaunch the Docker container
-  $SSH "docker stop $CONTAINER"
-  $SSH "docker rm $CONTAINER"
   $SSH "source .env && docker run --name $CONTAINER -d -p 80:8080 -p 8081:8081 --restart always --env LIGHTENING_TRADFRI_HOSTNAME --env LIGHTENING_TRADFRI_IDENTITY --env LIGHTENING_TRADFRI_PSK $TAG"
 )
 
