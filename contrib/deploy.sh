@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# First-time setup for a fresh Raspberry Pi:
+# 1. sudo apt-get update && apt-get install -y curl vim git
+# 1. sudo raspi-config # and set hostname to "lightening"
+# 1. curl -fsSL get.docker.com -o get-docker.sh && sh get-docker.sh
+# 1. sudo gpasswd -a pi docker
+# 1. git clone https://github.com/jareware/lightening.git
+# 1. vim .env # and add some secrets
+
 SSH="ssh pi@lightening.local"
 WC="lightening"
 TAG="lightening"
