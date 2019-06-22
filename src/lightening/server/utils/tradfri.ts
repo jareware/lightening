@@ -54,7 +54,7 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
           );
       }, 60 * 1000);
     })
-    .catch(err => console.log('ERROR', err));
+    .catch(err => console.log('createTradfriClient() ERROR', err));
 
   return {
     events,
