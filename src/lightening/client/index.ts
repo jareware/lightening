@@ -15,3 +15,18 @@ function render(state: GlobalState) {
   const now = performance.now();
   log.debug(`Rendering took ${(now - then).toFixed(1)} ms`);
 }
+
+if (location.search.indexOf('fullscreen') !== -1) {
+  const fs = () => {
+    launchIntoFullscreen(document.body);
+    document.body.removeEventListener('click', fs);
+  };
+  document.body.addEventListener('click', fs);
+}
+
+function launchIntoFullscreen(el: any) {
+  if (el.requestFullscreen) el.requestFullscreen();
+  if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+  if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  if (el.msRequestFullscreen) el.msRequestFullscreen();
+}
