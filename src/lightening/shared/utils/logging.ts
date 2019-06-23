@@ -20,7 +20,7 @@ export function createConsoleLogger(logLevel: LogLevel | null = 'debug'): Logger
     if (level(currentLevel) < level(logLevel)) return () => {};
     return (message, meta) => {
       const line = `[${currentLevel}] ${message}`;
-      const args = typeof meta === 'undefined' ? [line] : [line + '\n', meta];
+      const args: [any?, ...any[]] = typeof meta === 'undefined' ? [line] : [line + '\n', meta];
       console.log.apply(console, args);
     };
   };
