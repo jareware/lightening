@@ -11,4 +11,13 @@
     font-size: 20px;
     margin: 20px auto;
   }
+
+  &:-webkit-full-screen,
+  &:-moz-full-screen,
+  &:-ms-fullscreen,
+  &:fullscreen {
+    > button {
+      display: none;
+    }
+  }
 }
