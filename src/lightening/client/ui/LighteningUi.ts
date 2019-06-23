@@ -5,15 +5,16 @@ import FloorPlan from 'lightening/client/ui/FloorPlan';
 
 export default (state: GlobalState, ws: WebSocketClient) => {
   const fullscreenButtonVisible = location.search.indexOf('fullscreen') !== -1;
+  const fullscreenButton = button('Enter full screen', {
+    click() {
+      launchIntoFullscreen(document.querySelector('.lightening-LighteningUi'));
+      fullscreenButton.style.display = 'none'; // doing this via the :fullscreen CSS selector won't sit well with older browsers :/
+    },
+  });
   return div(
     { class: 'lightening-LighteningUi' },
     !state.clientState.webSocketConnected && pre('Connecting...'),
-    fullscreenButtonVisible &&
-      button('Enter full screen', {
-        click() {
-          launchIntoFullscreen(document.querySelector('.lightening-LighteningUi'));
-        },
-      }),
+    fullscreenButtonVisible && fullscreenButton,
     FloorPlan(state, ws),
   );
 };
