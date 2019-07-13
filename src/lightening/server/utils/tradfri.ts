@@ -14,6 +14,9 @@ import { ServerState } from 'lightening/shared/model/state';
 import { Device } from 'lightening/shared/model/tradfri';
 import { LightStateCommand } from 'lightening/shared/model/message';
 
+const GATEWAY_PING_INTERVAL = 60 * 1000;
+const GATEWAY_RETRY_INTERVAL = 15 * 1000;
+
 interface WorldStateEmitter extends EventEmitter {
   on(event: 'change', callback: (newWorldState: ServerState) => void): this;
 }
@@ -21,29 +24,42 @@ interface WorldStateEmitter extends EventEmitter {
 export function createTradfriClient(config: Config, log = NO_LOGGING) {
   log.info('Creating Trådfri client', config);
 
-  const tradfri = new Tradfri.TradfriClient(config.LIGHTENING_TRADFRI_HOSTNAME);
+  let tradfri: Tradfri.TradfriClient | null = null;
   const events: WorldStateEmitter = new EventEmitter();
-
   let state: ServerState = {
     devices: {},
   };
-
   const tradfriLookup: {
     [id: string]: Tradfri.Accessory | Tradfri.Group;
   } = {};
 
-  log.debug('Connecting...');
+  attemptConnectionToGateway();
 
-  tradfri
-    .connect(
-      config.LIGHTENING_TRADFRI_IDENTITY,
-      config.LIGHTENING_TRADFRI_PSK,
-    )
-    .then(() => {
-      log.debug('Connected!');
-      tradfri.on('group updated', group => update(convert(group))).observeGroupsAndScenes();
-      tradfri.on('device updated', device => update(convert(device))).observeDevices();
-      setInterval(() => {
+  return {
+    events,
+    setLightState,
+  };
+
+  function attemptConnectionToGateway() {
+    log.debug('Attempting connection to gateway');
+    const temp = new Tradfri.TradfriClient(config.LIGHTENING_TRADFRI_HOSTNAME);
+    temp
+      .connect(
+        config.LIGHTENING_TRADFRI_IDENTITY,
+        config.LIGHTENING_TRADFRI_PSK,
+      )
+      .then(() => (tradfri = temp))
+      .then(handleConnectionToGateway)
+      .catch(disconnectFromGateway);
+  }
+
+  function handleConnectionToGateway() {
+    if (!tradfri) throw new Error(`createTradfriClient(): Can't handle connection without an instance`);
+    log.info('Connected to gateway');
+    tradfri.on('group updated', group => update(convert(group))).observeGroupsAndScenes();
+    tradfri.on('device updated', device => update(convert(device))).observeDevices();
+    const int = setInterval(() => {
+      if (tradfri) {
         const then = Date.now();
         const timeout = 5000;
         tradfri.ping(timeout).then(success => {
@@ -51,16 +67,25 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
             log.debug(`Got ping from gateway (RTT ${Date.now() - then} ms)`);
           } else {
             log.warn(`Gateway did not respond to ping (timeout ${timeout} ms)`);
+            disconnectFromGateway();
           }
         });
-      }, 60 * 1000);
-    })
-    .catch(err => console.log('createTradfriClient() ERROR', err));
+      } else {
+        clearInterval(int); // we've disconnected in the meantime -> clean up
+      }
+    }, GATEWAY_PING_INTERVAL);
+  }
 
-  return {
-    events,
-    setLightState,
-  };
+  function disconnectFromGateway() {
+    if (tradfri) {
+      tradfri.removeAllListeners();
+      tradfri = null;
+      log.warn(`Disconnected from gateway`);
+    } else {
+      log.error(`Could not connect to gateway`);
+    }
+    setTimeout(attemptConnectionToGateway, GATEWAY_RETRY_INTERVAL);
+  }
 
   function setLightState(id: number, setOn: LightStateCommand) {
     const light = tradfriLookup[id];
