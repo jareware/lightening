@@ -46,12 +46,13 @@ export function createTradfriClient(config: Config, log = NO_LOGGING) {
       setInterval(() => {
         const then = Date.now();
         const timeout = 5000;
-        tradfri
-          .ping(timeout)
-          .then(
-            res => log.debug(`Got ping from gateway (RTT ${Date.now() - then} ms): ${res}`),
-            () => log.warn(`Gateway did not respond to ping (timeout ${timeout} ms)`),
-          );
+        tradfri.ping(timeout).then(success => {
+          if (success) {
+            log.debug(`Got ping from gateway (RTT ${Date.now() - then} ms)`);
+          } else {
+            log.warn(`Gateway did not respond to ping (timeout ${timeout} ms)`);
+          }
+        });
       }, 60 * 1000);
     })
     .catch(err => console.log('createTradfriClient() ERROR', err));
