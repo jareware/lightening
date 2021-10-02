@@ -1,30 +1,10 @@
 {
   "name": "lightening",
-  "version": "0.0.1-dev",
+  "version": "1.0.0",
   "description": "The lightening! It's happening!",
-  "engines": {
-    "node": "10.11.0",
-    "npm": "6.4.1"
-  },
+  "main": "index.js",
   "scripts": {
-    "\n==================== COMMON ====================": "",
-    "lint": "echo lint-versions lint-ts lint-prettier | parallel --delimiter ' ' --trim npm run --silent {}",
-    "lint-versions": "check-node-version --package",
-    "lint-ts": "find src -name tsconfig.json | parallel --trim tsc --noEmit --project {}",
-    "lint-prettier": "prettier --list-different '**/*.ts'",
-    "lint-watch": "chokidar '**/*.ts' --ignore node_modules --debounce 100 --initial --command 'echo -n Linting...\\ && npm run --silent lint && echo OK'",
-    "lint-fix": "prettier --write '**/*.ts'",
-    "watch": "echo client-js-watch client-css-watch server-watch | parallel --delimiter ' ' --trim npm run {}",
-    "\n==================== CLIENT ====================": "",
-    "client-build": "npm run client-js-build && npm run client-css-build",
-    "client-js-watch": "NODE_PATH=src watchify src/lightening/client/index.ts -p [ tsify --project src/lightening/client ] -v -o src/lightening/client/index.js",
-    "client-js-build": "NODE_PATH=src browserify src/lightening/client/index.ts -p [ tsify --project src/lightening/client ] > src/lightening/client/index.js",
-    "client-css-watch": "chokidar 'src/**/*.scss' --initial --command 'node-sass --include-path=node_modules --output src/lightening/client src/lightening/client/index.scss'",
-    "client-css-build": "node-sass --include-path=node_modules --output src/lightening/client src/lightening/client/index.scss",
-    "\n==================== SERVER ====================": "",
-    "server-watch": "check-node-version --package && NODE_PATH=src nodemon --watch src/lightening/server --watch src/lightening/shared --ext ts --exec ts-node -- --project src/lightening/server/tsconfig.json src/lightening/server",
-    "server-build": "NODE_PATH=src tsc --project src/lightening/server/tsconfig.json",
-    "server-start": "check-node-version --package && NODE_PATH=src node src/lightening/server"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -35,30 +15,5 @@
   "bugs": {
     "url": "https://github.com/jareware/lightening/issues"
   },
-  "homepage": "https://github.com/jareware/lightening#readme",
-  "dependencies": {
-    "check-node-version": "^3.2.0",
-    "node-static": "^0.7.11",
-    "node-tradfri-client": "^1.5.0",
-    "ws": "^6.1.0"
-  },
-  "devDependencies": {
-    "@types/cli-table": "^0.3.0",
-    "@types/lodash": "^4.14.117",
-    "@types/node": "^10.11.6",
-    "@types/node-static": "^0.7.2",
-    "@types/ws": "^6.0.1",
-    "browserify": "^16.2.3",
-    "chokidar-cli": "^1.2.2",
-    "cli-table": "^0.3.1",
-    "lodash": "^4.17.11",
-    "node-sass": "^4.9.4",
-    "nodemon": "^1.18.4",
-    "parallel": "^1.2.0",
-    "prettier": "^1.14.3",
-    "ts-node": "^7.0.1",
-    "tsify": "^4.0.0",
-    "typescript": "^3.5.3",
-    "watchify": "^3.11.1"
-  }
+  "homepage": "https://github.com/jareware/lightening#readme"
 }
