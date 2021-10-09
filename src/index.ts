@@ -1,3 +1,5 @@
 import { createApp } from 'src/app'
 
-void createApp('tcp://192.168.1.230:1883')
+createApp('tcp://192.168.1.230:1883').then(
+  app => ((global as any).app = app), // make app available as global for easier REPL startup
+)

@@ -4,7 +4,7 @@
   "description": "The lightening! It's happening!",
   "scripts": {
     "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node --transpile-only --require tsconfig-paths/register --files' src/index.ts",
-    "repl": "ts-node --transpile-only --require tsconfig-paths/register"
+    "repl": "ts-node --transpile-only --require tsconfig-paths/register --require src/index.ts"
   },
   "repository": {
     "type": "git",

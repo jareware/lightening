@@ -10,6 +10,7 @@ import {
 import { assertExhausted, isModel, parseAsModel } from 'src/utils'
 import { PromiseOf } from 'src/types'
 import { MqttClient } from 'src/mqtt'
+import { CommandModule } from 'src/command'
 
 type LightGroups = Array<{
   friendlyName: string
@@ -25,10 +26,12 @@ type LightGroups = Array<{
 }>
 
 export type StateMachine = PromiseOf<ReturnType<typeof createStateMachine>>
-export async function createStateMachine(mqtt: MqttClient) {
+export async function createStateMachine(command: CommandModule) {
   let initDevices: DevicesInitMessage | undefined
   let initGroups: GroupsInitMessage | undefined
   let lightGroups: LightGroups | undefined
+
+  setInterval(queryMissingCurrentState, 500)
 
   // Return public API:
   return {
@@ -75,14 +78,6 @@ export async function createStateMachine(mqtt: MqttClient) {
               friendlyName: device.friendly_name,
             })),
         }))
-
-      // Request the current state of the devices in each group:
-      for (const group of lightGroups) {
-        await mqtt.publishOutgoingMessage(
-          ['zigbee2mqtt', group.friendlyName, 'get'],
-          { state: '' },
-        )
-      }
     }
   }
 
@@ -104,6 +99,13 @@ export async function createStateMachine(mqtt: MqttClient) {
           : light,
       ),
     }))
+  }
+
+  async function queryMissingCurrentState() {
+    const missingCurrentState = lightGroups?.find(group =>
+      group.members.some(light => !light.latestReceivedState),
+    )
+    if (missingCurrentState) command.queryCurrentState(missingCurrentState)
   }
 
   /**
@@ -129,7 +131,7 @@ export async function createStateMachine(mqtt: MqttClient) {
             {
               Group: i === 0 ? group.friendlyName : '',
               Light: light.friendlyName,
-              State: light.latestReceivedState?.state ? 'ON' : '',
+              State: light.latestReceivedState?.state ?? '',
               Brightness: light.latestReceivedState?.brightness ?? '',
               Updated:
                 sinceLastUpdate === null
