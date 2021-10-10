@@ -11,8 +11,9 @@ import { assertExhausted, isModel, parseAsModel } from 'src/utils'
 import { PromiseOf } from 'src/types'
 import { MqttClient } from 'src/mqtt'
 import { CommandModule } from 'src/command'
+import { DebugOutput } from 'src/debug'
 
-type LightGroups = Array<{
+export type LightGroups = Array<{
   friendlyName: string
   members: Array<{
     friendlyName: string
@@ -26,7 +27,10 @@ type LightGroups = Array<{
 }>
 
 export type StateMachine = PromiseOf<ReturnType<typeof createStateMachine>>
-export async function createStateMachine(command: CommandModule) {
+export async function createStateMachine(
+  command: CommandModule,
+  debug: DebugOutput,
+) {
   let initDevices: DevicesInitMessage | undefined
   let initGroups: GroupsInitMessage | undefined
   let lightGroups: LightGroups | undefined
@@ -44,10 +48,10 @@ export async function createStateMachine(command: CommandModule) {
       isModel(GroupsInitMessage)(message)
     ) {
       processIncomingInitMessage(message)
-      printStateToConsole()
+      if (lightGroups) debug.logAppState(lightGroups)
     } else if (isModel(DeviceStatusMessage)(message)) {
       processIncomingDeviceStatusMessage(message)
-      printStateToConsole()
+      if (lightGroups) debug.logAppState(lightGroups)
     } else {
       assertExhausted(message)
     }
@@ -106,48 +110,5 @@ export async function createStateMachine(command: CommandModule) {
       group.members.some(light => !light.latestReceivedState),
     )
     if (missingCurrentState) command.queryCurrentState(missingCurrentState)
-  }
-
-  /**
-   * @see https://github.com/Automattic/cli-table
-   */
-  function printStateToConsole() {
-    const table = new Table({
-      columns: [
-        { name: 'Group', alignment: 'left' },
-        { name: 'Light', alignment: 'left' },
-        { name: 'State', alignment: 'center' },
-        { name: 'Brightness', alignment: 'right' },
-        { name: 'Updated', alignment: 'right' },
-      ],
-    })
-    _.sortBy(lightGroups, group => group.friendlyName).forEach(group =>
-      _.sortBy(group.members, light => light.friendlyName).forEach(
-        (light, i) => {
-          const sinceLastUpdate = light.latestReceivedState
-            ? (Date.now() - light.latestReceivedState?.updated.getTime()) / 1000
-            : null
-          table.addRow(
-            {
-              Group: i === 0 ? group.friendlyName : '',
-              Light: light.friendlyName,
-              State: light.latestReceivedState?.state ?? '',
-              Brightness: light.latestReceivedState?.brightness ?? '',
-              Updated:
-                sinceLastUpdate === null
-                  ? ''
-                  : sinceLastUpdate.toFixed(0) + ' sec ago',
-            },
-            {
-              color:
-                sinceLastUpdate !== null && sinceLastUpdate < 1
-                  ? 'cyan'
-                  : undefined,
-            },
-          )
-        },
-      ),
-    )
-    table.printTable()
   }
 }
