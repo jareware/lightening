@@ -8,12 +8,14 @@ export type DebugOutput = PromiseOf<ReturnType<typeof createDebugOutput>>
 export async function createDebugOutput(
   logFile = __dirname + '/../lightening.log',
 ) {
-  var logStream = createWriteStream(logFile, { flags: 'w' })
+  let logStream = createWriteStream(logFile, { flags: 'w' })
+  let prevLightGroups: LightGroups
 
   return {
     logIncomingMessage,
     logOutgoingMessage,
     logAppState,
+    logAppStateIfNeeded,
   }
 
   function logIncomingMessage(topic: string, message: unknown) {
@@ -43,6 +45,12 @@ export async function createDebugOutput(
       ) + '\n\n',
       _.noop,
     )
+  }
+
+  function logAppStateIfNeeded(lightGroups: LightGroups) {
+    if (_.isEqual(prevLightGroups, lightGroups)) return
+    logAppState(lightGroups)
+    prevLightGroups = lightGroups
   }
 
   /**

@@ -56,8 +56,28 @@ export const DeviceStatusMessage = t.type(
   'DeviceStatusMessage',
 )
 
+export type ButtonPressMessage = t.TypeOf<typeof ButtonPressMessage>
+export const ButtonPressMessage = t.type(
+  {
+    topic: t.tuple([t.literal('zigbee2mqtt'), t.string]),
+    body: t.type({
+      action: t.union([
+        t.literal('on'), // Button fast press
+        t.literal('brightness_move_up'), // Button long press started
+        t.literal('brightness_stop'), // Button long press finished
+      ]),
+    }),
+  },
+  'ButtonPressMessage',
+)
+
 export type IncomingMessage = t.TypeOf<typeof IncomingMessage>
 export const IncomingMessage = t.union(
-  [DevicesInitMessage, GroupsInitMessage, DeviceStatusMessage],
+  [
+    DevicesInitMessage,
+    GroupsInitMessage,
+    DeviceStatusMessage,
+    ButtonPressMessage,
+  ],
   'IncomingMessage',
 )

@@ -1,32 +1,59 @@
 import { MqttClient } from 'src/mqtt'
+import { LightGroups } from 'src/state'
 import { PromiseOf } from 'src/types'
 
 export type CommandModule = PromiseOf<ReturnType<typeof createCommandModule>>
 export async function createCommandModule(mqtt: MqttClient) {
   return {
-    async queryCurrentState(device: string | { friendlyName: string }) {
-      await mqtt.publishOutgoingMessage(
-        [
-          'zigbee2mqtt',
-          typeof device === 'string' ? device : device?.friendlyName,
-          'get',
-        ],
-        { state: '' },
-      )
-    },
+    queryCurrentState,
+    setNewLightState,
+    setNewLightStateIfNeeded,
+  }
 
-    async setNewLightState(
-      device: string | { friendlyName: string },
-      brightness: number,
+  function nameOf(device: string | { friendlyName: string }) {
+    return typeof device === 'string' ? device : device?.friendlyName
+  }
+
+  async function queryCurrentState(device: string | { friendlyName: string }) {
+    await mqtt.publishOutgoingMessage(['zigbee2mqtt', nameOf(device), 'get'], {
+      state: '',
+    })
+  }
+
+  async function setNewLightState(
+    device: string | { friendlyName: string },
+    brightness: number,
+  ) {
+    await mqtt.publishOutgoingMessage(['zigbee2mqtt', nameOf(device), 'set'], {
+      brightness,
+      state: brightness === 0 ? 'OFF' : 'ON',
+    })
+  }
+
+  async function setNewLightStateIfNeeded(
+    device: string | { friendlyName: string },
+    brightness: number,
+    currentStates: LightGroups,
+  ) {
+    const isAlreadyInDesiredState = createDesiredStateMatcher(brightness)
+    if (
+      currentStates
+        .find(group => group.friendlyName === nameOf(device))
+        ?.members.every(isAlreadyInDesiredState)
     ) {
-      await mqtt.publishOutgoingMessage(
-        [
-          'zigbee2mqtt',
-          typeof device === 'string' ? device : device.friendlyName,
-          'set',
-        ],
-        { brightness, state: brightness === 0 ? 'OFF' : 'ON' },
-      )
-    },
+      console.log(`No need to set ${nameOf(device)}`)
+      return // this group is already set!
+    } else {
+      console.log(`WILL set ${nameOf(device)}`)
+      await setNewLightState(nameOf(device), brightness)
+    }
+  }
+
+  function createDesiredStateMatcher(brightness: number) {
+    return (light: LightGroups[number]['members'][number]) =>
+      (brightness === 0 && light.latestReceivedState?.state === 'OFF') ||
+      (brightness !== 0 &&
+        light.latestReceivedState?.state === 'ON' &&
+        light.latestReceivedState.brightness === brightness)
   }
 }
