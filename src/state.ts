@@ -1,18 +1,14 @@
-import MQTT from 'async-mqtt'
-import _ from 'lodash'
-import { Table, printTable } from 'console-table-printer'
-import {
-  DevicesInitMessage,
-  GroupsInitMessage,
-  IncomingMessage,
-  DeviceStatusMessage,
-  ButtonPressMessage,
-} from 'src/messages'
-import { assertExhausted, isModel, parseAsModel } from 'src/utils'
-import { PromiseOf } from 'src/types'
-import { MqttClient } from 'src/mqtt'
 import { CommandModule } from 'src/command'
 import { DebugOutput } from 'src/debug'
+import {
+  ButtonPressMessage,
+  DevicesInitMessage,
+  DeviceStatusMessage,
+  GroupsInitMessage,
+  IncomingMessage,
+} from 'src/messages'
+import { PromiseOf } from 'src/types'
+import { assertExhausted, isModel } from 'src/utils'
 
 export type LightGroups = Array<{
   friendlyName: string
@@ -119,13 +115,13 @@ export async function createStateMachine(
       await setScene('Day')
     } else if (message.body.action === 'on') {
       switch (friendlyName) {
-        case 'nappi_night':
+        case 'button_night':
           await setScene('Night')
           break
-        case 'nappi_off':
+        case 'button_off':
           await setScene('Off')
           break
-        case 'nappi_tv':
+        case 'button_tv':
           await setScene('TV')
           break
       }
@@ -159,18 +155,10 @@ export async function createStateMachine(
 type LightGroupName =
   | 'eteinen_group'
   | 'keittiö_group'
-  | 'keittiön_työtasot_group'
-  | 'kylppäri_group'
-  | 'makkari_group'
-  | 'näytön_taustavalo_group'
-  | 'olohuone_group'
-  | 'parveke_group'
-  | 'pikkuvessa_group'
   | 'ruokapöytä_group'
-  | 'telkkarin_taustavalo_group'
-  | 'työnurkka_group'
-  | 'vaatehuone_group'
-  | 'yövalot_group'
+  | 'telkkari_group'
+  | 'työhuone_group'
+  | 'olkkari_group'
 
 type Scene = { [key in LightGroupName]: { brightness: number } }
 type Scenes = { [key: string]: Scene | undefined }
@@ -183,65 +171,33 @@ const scenes: Scenes = {
   Off: {
     eteinen_group: off,
     keittiö_group: off,
-    keittiön_työtasot_group: off,
-    kylppäri_group: off,
-    makkari_group: off,
-    näytön_taustavalo_group: off,
-    olohuone_group: off,
-    parveke_group: off,
-    pikkuvessa_group: off,
     ruokapöytä_group: off,
-    telkkarin_taustavalo_group: off,
-    työnurkka_group: off,
-    vaatehuone_group: off,
-    yövalot_group: off,
+    telkkari_group: off,
+    työhuone_group: off,
+    olkkari_group: off,
   },
   Day: {
     eteinen_group: full,
     keittiö_group: full,
-    keittiön_työtasot_group: full,
-    kylppäri_group: full,
-    makkari_group: full,
-    näytön_taustavalo_group: off,
-    olohuone_group: full,
-    parveke_group: full,
-    pikkuvessa_group: full,
     ruokapöytä_group: full,
-    telkkarin_taustavalo_group: off,
-    työnurkka_group: full,
-    vaatehuone_group: full,
-    yövalot_group: off,
+    telkkari_group: off,
+    työhuone_group: full,
+    olkkari_group: full,
   },
   Night: {
     eteinen_group: off,
-    keittiö_group: off,
-    keittiön_työtasot_group: dim,
-    kylppäri_group: dim,
-    makkari_group: off,
-    näytön_taustavalo_group: off,
-    olohuone_group: off,
-    parveke_group: off,
-    pikkuvessa_group: dim,
-    ruokapöytä_group: off,
-    telkkarin_taustavalo_group: off,
-    työnurkka_group: off,
-    vaatehuone_group: dim,
-    yövalot_group: dim,
+    keittiö_group: dim,
+    ruokapöytä_group: dim,
+    telkkari_group: off,
+    työhuone_group: dim,
+    olkkari_group: dim,
   },
   TV: {
     eteinen_group: off,
     keittiö_group: off,
-    keittiön_työtasot_group: dim,
-    kylppäri_group: dim,
-    makkari_group: dim,
-    näytön_taustavalo_group: off,
-    olohuone_group: off,
-    parveke_group: off,
-    pikkuvessa_group: dim,
     ruokapöytä_group: dim,
-    telkkarin_taustavalo_group: { brightness: 100 },
-    työnurkka_group: off,
-    vaatehuone_group: dim,
-    yövalot_group: dim,
+    telkkari_group: { brightness: 175 },
+    työhuone_group: off,
+    olkkari_group: dim,
   },
 }

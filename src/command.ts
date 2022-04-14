@@ -27,6 +27,7 @@ export async function createCommandModule(mqtt: MqttClient) {
     await mqtt.publishOutgoingMessage(['zigbee2mqtt', nameOf(device), 'set'], {
       brightness,
       state: brightness === 0 ? 'OFF' : 'ON',
+      transition: 3,
     })
   }
 
