@@ -159,12 +159,14 @@ type LightGroupName =
   | 'telkkari_group'
   | 'työhuone_group'
   | 'olkkari_group'
+  | 'pikkuvessa_group'
+  | 'kylppäri_group'
 
 type Scene = { [key in LightGroupName]: { brightness: number } }
 type Scenes = { [key: string]: Scene | undefined }
 
 const off = { brightness: 0 }
-const dim = { brightness: 1 }
+const dim = { brightness: 30 }
 const full = { brightness: 254 }
 
 const scenes: Scenes = {
@@ -175,6 +177,8 @@ const scenes: Scenes = {
     telkkari_group: off,
     työhuone_group: off,
     olkkari_group: off,
+    pikkuvessa_group: off,
+    kylppäri_group: off,
   },
   Day: {
     eteinen_group: full,
@@ -183,6 +187,8 @@ const scenes: Scenes = {
     telkkari_group: off,
     työhuone_group: full,
     olkkari_group: full,
+    pikkuvessa_group: full,
+    kylppäri_group: full,
   },
   Night: {
     eteinen_group: off,
@@ -191,6 +197,8 @@ const scenes: Scenes = {
     telkkari_group: off,
     työhuone_group: dim,
     olkkari_group: dim,
+    pikkuvessa_group: dim,
+    kylppäri_group: dim,
   },
   TV: {
     eteinen_group: off,
@@ -199,5 +207,7 @@ const scenes: Scenes = {
     telkkari_group: { brightness: 175 },
     työhuone_group: off,
     olkkari_group: dim,
+    pikkuvessa_group: dim,
+    kylppäri_group: dim,
   },
 }
