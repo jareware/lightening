@@ -6,6 +6,7 @@ import {
   GroupsInitMessage,
   IncomingMessage,
   LightStateMessage,
+  MotionSensorMessage,
 } from 'src/messages'
 import { PromiseOf } from 'src/types'
 import { assertExhausted, isModel } from 'src/utils'
@@ -52,6 +53,9 @@ export async function createStateMachine(
       if (lightGroups) debug.logAppStateIfNeeded(lightGroups)
     } else if (isModel(ButtonPressMessage)(message)) {
       processIncomingButtonPressMessage(message)
+      if (lightGroups) debug.logAppStateIfNeeded(lightGroups)
+    } else if (isModel(MotionSensorMessage)(message)) {
+      processIncomingMotionSensorMessage(message)
       if (lightGroups) debug.logAppStateIfNeeded(lightGroups)
     } else {
       assertExhausted(message)
@@ -123,6 +127,19 @@ export async function createStateMachine(
           await setScene('TV')
           break
       }
+    }
+  }
+
+  async function processIncomingMotionSensorMessage(
+    message: MotionSensorMessage,
+  ) {
+    const [, friendlyName] = message.topic
+    if (friendlyName === 'motion_eteinen') {
+      command.setNewLightState(
+        'siivouskaappi_1',
+        message.body.occupancy ? 254 : 0,
+        1,
+      )
     }
   }
 

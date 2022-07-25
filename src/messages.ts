@@ -71,6 +71,18 @@ export const ButtonPressMessage = t.type(
   'ButtonPressMessage',
 )
 
+export type MotionSensorMessage = t.TypeOf<typeof MotionSensorMessage>
+export const MotionSensorMessage = t.type(
+  {
+    topic: t.tuple([t.literal('zigbee2mqtt'), t.string]),
+    body: t.type({
+      illuminance_above_threshold: t.boolean,
+      occupancy: t.boolean,
+    }),
+  },
+  'MotionSensorMessage',
+)
+
 export type IncomingMessage = t.TypeOf<typeof IncomingMessage>
 export const IncomingMessage = t.union(
   [
@@ -78,6 +90,7 @@ export const IncomingMessage = t.union(
     GroupsInitMessage,
     LightStateMessage,
     ButtonPressMessage,
+    MotionSensorMessage,
   ],
   'IncomingMessage',
 )
