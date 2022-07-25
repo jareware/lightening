@@ -1,11 +1,11 @@
-import { CommandModule, createDesiredStateMatcher } from 'src/command'
+import { CommandModule } from 'src/command'
 import { DebugOutput } from 'src/debug'
 import {
   ButtonPressMessage,
   DevicesInitMessage,
-  DeviceStatusMessage,
   GroupsInitMessage,
   IncomingMessage,
+  LightStateMessage,
 } from 'src/messages'
 import { PromiseOf } from 'src/types'
 import { assertExhausted, isModel } from 'src/utils'
@@ -47,8 +47,8 @@ export async function createStateMachine(
     ) {
       processIncomingInitMessage(message)
       if (lightGroups) debug.logAppStateIfNeeded(lightGroups)
-    } else if (isModel(DeviceStatusMessage)(message)) {
-      processIncomingDeviceStatusMessage(message)
+    } else if (isModel(LightStateMessage)(message)) {
+      processIncomingLightStateMessage(message)
       if (lightGroups) debug.logAppStateIfNeeded(lightGroups)
     } else if (isModel(ButtonPressMessage)(message)) {
       processIncomingButtonPressMessage(message)
@@ -86,11 +86,8 @@ export async function createStateMachine(
     }
   }
 
-  async function processIncomingDeviceStatusMessage(
-    message: DeviceStatusMessage,
-  ) {
+  async function processIncomingLightStateMessage(message: LightStateMessage) {
     const [, friendlyName] = message.topic
-    const then = lightGroups
     lightGroups = lightGroups?.map(group => ({
       ...group,
       members: group.members.map(light =>

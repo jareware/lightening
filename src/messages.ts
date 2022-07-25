@@ -40,8 +40,8 @@ export const GroupsInitMessage = t.type(
   'GroupsInitMessage',
 )
 
-export type DeviceStatusMessage = t.TypeOf<typeof DeviceStatusMessage>
-export const DeviceStatusMessage = t.type(
+export type LightStateMessage = t.TypeOf<typeof LightStateMessage>
+export const LightStateMessage = t.type(
   {
     topic: t.tuple([t.literal('zigbee2mqtt'), t.string]),
     body: t.intersection([
@@ -53,7 +53,7 @@ export const DeviceStatusMessage = t.type(
       }),
     ]),
   },
-  'DeviceStatusMessage',
+  'LightStateMessage',
 )
 
 export type ButtonPressMessage = t.TypeOf<typeof ButtonPressMessage>
@@ -76,7 +76,7 @@ export const IncomingMessage = t.union(
   [
     DevicesInitMessage,
     GroupsInitMessage,
-    DeviceStatusMessage,
+    LightStateMessage,
     ButtonPressMessage,
   ],
   'IncomingMessage',
