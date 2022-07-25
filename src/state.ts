@@ -107,6 +107,11 @@ export async function createStateMachine(
           : light,
       ),
     }))
+
+    // TODO: DELME
+    if (typeof message.body.brightness !== 'number') {
+      console.log('OBS: Got LightStateMessage without brightness')
+    }
   }
 
   async function processIncomingButtonPressMessage(
