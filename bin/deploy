@@ -1,0 +1,7 @@
+#!/bin/bash
+
+ssh pi@192.168.1.3 bash -c '
+  cd lightening
+  git pull
+  docker restart lightening
+'
