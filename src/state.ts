@@ -1,4 +1,4 @@
-import { CommandModule } from 'src/command'
+import { CommandModule, createDesiredStateMatcher } from 'src/command'
 import { DebugOutput } from 'src/debug'
 import {
   ButtonPressMessage,
@@ -90,6 +90,7 @@ export async function createStateMachine(
     message: DeviceStatusMessage,
   ) {
     const [, friendlyName] = message.topic
+    const then = lightGroups
     lightGroups = lightGroups?.map(group => ({
       ...group,
       members: group.members.map(light =>

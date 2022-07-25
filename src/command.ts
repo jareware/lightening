@@ -23,11 +23,12 @@ export async function createCommandModule(mqtt: MqttClient) {
   async function setNewLightState(
     device: string | { friendlyName: string },
     brightness: number,
+    transition = 2,
   ) {
     await mqtt.publishOutgoingMessage(['zigbee2mqtt', nameOf(device), 'set'], {
       brightness,
       state: brightness === 0 ? 'OFF' : 'ON',
-      transition: 2,
+      transition,
     })
   }
 
@@ -49,12 +50,12 @@ export async function createCommandModule(mqtt: MqttClient) {
       await setNewLightState(nameOf(device), brightness)
     }
   }
+}
 
-  function createDesiredStateMatcher(brightness: number) {
-    return (light: LightGroups[number]['members'][number]) =>
-      (brightness === 0 && light.latestReceivedState?.state === 'OFF') ||
-      (brightness !== 0 &&
-        light.latestReceivedState?.state === 'ON' &&
-        light.latestReceivedState.brightness === brightness)
-  }
+export function createDesiredStateMatcher(brightness: number) {
+  return (light: LightGroups[number]['members'][number]) =>
+    (brightness === 0 && light.latestReceivedState?.state === 'OFF') ||
+    (brightness !== 0 &&
+      light.latestReceivedState?.state === 'ON' &&
+      light.latestReceivedState.brightness === brightness)
 }
