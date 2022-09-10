@@ -1,6 +1,6 @@
-import { MqttClient } from 'src/mqtt'
-import { LightGroups } from 'src/state'
-import { PromiseOf } from 'src/types'
+import { MqttClient } from 'src/server/mqtt'
+import { LightGroups } from 'src/server/state'
+import { PromiseOf } from 'src/server/types'
 
 export type CommandModule = PromiseOf<ReturnType<typeof createCommandModule>>
 export async function createCommandModule(mqtt: MqttClient) {

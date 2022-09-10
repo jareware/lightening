@@ -1,5 +1,5 @@
-import { CommandModule } from 'src/command'
-import { DebugOutput } from 'src/debug'
+import { CommandModule } from 'src/server/command'
+import { DebugOutput } from 'src/server/debug'
 import {
   ButtonPressMessage,
   DevicesInitMessage,
@@ -7,9 +7,9 @@ import {
   IncomingMessage,
   LightStateMessage,
   MotionSensorMessage,
-} from 'src/messages'
-import { PromiseOf } from 'src/types'
-import { assertExhausted, isModel } from 'src/utils'
+} from 'src/server/messages'
+import { PromiseOf } from 'src/server/types'
+import { assertExhausted, isModel } from 'src/server/utils'
 
 export type LightGroups = Array<{
   friendlyName: string

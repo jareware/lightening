@@ -1,8 +1,9 @@
 import { Table } from 'console-table-printer'
 import { createWriteStream } from 'fs'
 import _ from 'lodash'
-import { LightGroups } from 'src/state'
-import { PromiseOf } from 'src/types'
+import { asd } from 'src/server'
+import { LightGroups } from 'src/server/state'
+import { PromiseOf } from 'src/server/types'
 
 export type DebugOutput = PromiseOf<ReturnType<typeof createDebugOutput>>
 export async function createDebugOutput(
@@ -57,6 +58,10 @@ export async function createDebugOutput(
    * @see https://github.com/Automattic/cli-table
    */
   function logAppState(lightGroups: LightGroups) {
+    if (asd.ws) {
+      console.log('Sending state down')
+      asd.ws.send(JSON.stringify(lightGroups))
+    }
     const table = new Table({
       columns: [
         { name: 'Group', alignment: 'left' },

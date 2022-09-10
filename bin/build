@@ -2,8 +2,9 @@
 
 set -euo pipefail # exit on error; treat unset variables as errors; exit on errors in piped commands
 
-ssh pi@192.168.1.3 bash -c '
-  cd lightening
-  git pull
-  docker restart lightening
-'
+npm run build:client
+mv build client-build
+npm run build:server
+mv client-build build
+
+node build/server.js

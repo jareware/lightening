@@ -1,7 +1,7 @@
-import { createCommandModule } from 'src/command'
-import { createDebugOutput } from 'src/debug'
-import { createMqttClient } from 'src/mqtt'
-import { createStateMachine } from 'src/state'
+import { createCommandModule } from 'src/server/command'
+import { createDebugOutput } from 'src/server/debug'
+import { createMqttClient } from 'src/server/mqtt'
+import { createStateMachine } from 'src/server/state'
 
 export async function createApp(mqttAddress: string) {
   const debug = await createDebugOutput()
