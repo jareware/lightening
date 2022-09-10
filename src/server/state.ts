@@ -10,6 +10,7 @@ import {
 } from 'src/server/messages'
 import { PromiseOf } from 'src/server/types'
 import { assertExhausted, isModel } from 'src/server/utils'
+import { WebServer } from 'src/server/web'
 
 export type LightGroups = Array<{
   friendlyName: string
@@ -28,6 +29,7 @@ export type StateMachine = PromiseOf<ReturnType<typeof createStateMachine>>
 export async function createStateMachine(
   command: CommandModule,
   debug: DebugOutput,
+  web: WebServer,
 ) {
   let initDevices: DevicesInitMessage | undefined
   let initGroups: GroupsInitMessage | undefined
@@ -47,16 +49,28 @@ export async function createStateMachine(
       isModel(GroupsInitMessage)(message)
     ) {
       processIncomingInitMessage(message)
-      if (lightGroups) debug.logAppStateIfNeeded(lightGroups)
+      if (lightGroups) {
+        debug.logAppStateIfNeeded(lightGroups)
+        web.sendAppStateIfNeeded(lightGroups)
+      }
     } else if (isModel(LightStateMessage)(message)) {
       processIncomingLightStateMessage(message)
-      if (lightGroups) debug.logAppStateIfNeeded(lightGroups)
+      if (lightGroups) {
+        debug.logAppStateIfNeeded(lightGroups)
+        web.sendAppStateIfNeeded(lightGroups)
+      }
     } else if (isModel(ButtonPressMessage)(message)) {
       processIncomingButtonPressMessage(message)
-      if (lightGroups) debug.logAppStateIfNeeded(lightGroups)
+      if (lightGroups) {
+        debug.logAppStateIfNeeded(lightGroups)
+        web.sendAppStateIfNeeded(lightGroups)
+      }
     } else if (isModel(MotionSensorMessage)(message)) {
       processIncomingMotionSensorMessage(message)
-      if (lightGroups) debug.logAppStateIfNeeded(lightGroups)
+      if (lightGroups) {
+        debug.logAppStateIfNeeded(lightGroups)
+        web.sendAppStateIfNeeded(lightGroups)
+      }
     } else {
       assertExhausted(message)
     }
