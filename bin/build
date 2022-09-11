@@ -7,4 +7,5 @@ mv build client-build
 npm run build:server
 mv client-build build
 
-node build/server.js
+# To start server process immediately after:
+# node build/server.js
