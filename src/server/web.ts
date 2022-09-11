@@ -2,13 +2,14 @@ import express, { Request } from 'express'
 import expressWs from 'express-ws'
 import _ from 'lodash'
 import path from 'path'
+import { CommandModule } from 'src/server/command'
 import { LightGroups } from 'src/server/state'
 import { PromiseOf } from 'src/server/types'
 import { PORT } from 'src/shared/config'
 import { WebSocket } from 'ws'
 
 export type WebServer = PromiseOf<ReturnType<typeof createWebServer>>
-export async function createWebServer() {
+export async function createWebServer(command: CommandModule) {
   let prevLightGroups: LightGroups
   let connectedSockets: Array<WebSocket> = []
 
@@ -44,8 +45,14 @@ export async function createWebServer() {
     if (prevLightGroups) {
       ws.send(JSON.stringify(prevLightGroups)) // if we already have the latest state available, send it down immediately
     }
-    ws.on('message', (msg: any) => {
+    ws.on('message', (msg: string) => {
       console.log('Got message from socket:', msg)
+      const parsed = JSON.parse(msg)
+      command.setNewLightStateIfNeeded(
+        parsed.device,
+        parsed.brightness,
+        prevLightGroups,
+      )
     })
     ws.on('close', () => {
       console.log('Connection closing')

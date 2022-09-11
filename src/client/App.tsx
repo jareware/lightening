@@ -1,23 +1,23 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import 'src/client/App.css'
-import logo from 'src/client/logo.svg'
 import { PORT } from 'src/shared/config'
 import { LightGroups } from 'src/server/state'
 
 function App() {
   const [state, setState] = useState<LightGroups | undefined>()
+  const socket = useRef<WebSocket | undefined>()
   useEffect(() => {
-    const socket = new WebSocket(`ws://${location.hostname}:${PORT}/`)
-    socket.onopen = e => {
-      // socket.send('My name is John')
+    socket.current = new WebSocket(`ws://${location.hostname}:${PORT}/`)
+    socket.current.onopen = e => {
+      // socket.current.send('My name is John')
     }
 
-    socket.onmessage = function (event) {
+    socket.current.onmessage = function (event) {
       console.log(`[message] Data received from server: ${event.data}`)
       setState(JSON.parse(event.data))
     }
 
-    socket.onclose = function (event) {
+    socket.current.onclose = function (event) {
       if (event.wasClean) {
         console.log(
           `[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`,
@@ -29,13 +29,13 @@ function App() {
       }
     }
 
-    socket.onerror = function (error: any) {
+    socket.current.onerror = function (error: any) {
       console.log(`[error] ${error.message}`)
     }
 
     return () => {
       console.log('Closing the socket because unmounting')
-      socket.close()
+      socket.current?.close()
     }
   }, [])
 
@@ -59,6 +59,34 @@ function App() {
               <td>{light.friendlyName}</td>
               <td>{light.latestReceivedState?.state}</td>
               <td>{light.latestReceivedState?.brightness}</td>
+              <td>
+                <button
+                  onClick={() => {
+                    socket.current?.send(
+                      JSON.stringify({
+                        device: light.friendlyName,
+                        brightness: 254,
+                      }),
+                    )
+                  }}
+                >
+                  ON
+                </button>
+              </td>
+              <td>
+                <button
+                  onClick={() => {
+                    socket.current?.send(
+                      JSON.stringify({
+                        device: light.friendlyName,
+                        brightness: 0,
+                      }),
+                    )
+                  }}
+                >
+                  OFF
+                </button>
+              </td>
             </tr>
           )),
         )}
