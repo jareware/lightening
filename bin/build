@@ -9,3 +9,6 @@ mv client-build build
 
 # To start server process immediately after:
 # node build/server.js
+
+docker buildx build --platform linux/arm -t ghcr.io/jareware/lightening:latest .
+docker push ghcr.io/jareware/lightening:latest
