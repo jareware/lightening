@@ -3,7 +3,7 @@
 set -euo pipefail # exit on error; treat unset variables as errors; exit on errors in piped commands
 
 ssh pi@192.168.1.3 bash -c '
-  cd lightening
-  git pull
-  docker restart lightening
+  docker pull ghcr.io/jareware/lightening:latest
+  docker rm -f lightening
+  docker-compose up -d lightening
 '
