@@ -2,19 +2,13 @@ import React, { useEffect, useState } from 'react'
 import 'src/client/App.css'
 import logo from 'src/client/logo.svg'
 import { PORT } from 'src/shared/config'
+import { LightGroups } from 'src/server/state'
 
 function App() {
-  const [state, setState] = useState<unknown>()
+  const [state, setState] = useState<LightGroups | undefined>()
   useEffect(() => {
-    // const addr =
-    //   process.env.NODE_ENV === 'production'
-    //     ? 'ws://' + location.hostname + ':3001/'
-    //     : 'ws://' + location.hostname + ':3001/'
     const socket = new WebSocket(`ws://${location.hostname}:${PORT}/`)
-    // var socket = new WebSocket("ws://" + location.host + "/whatever");
-
-    // socket.send("Here's some text that the server is urgently awaiting!")
-    socket.onopen = function (e) {
+    socket.onopen = e => {
       // socket.send('My name is John')
     }
 
@@ -45,7 +39,32 @@ function App() {
     }
   }, [])
 
-  return <pre>{JSON.stringify(state, null, 2)}</pre>
+  console.log(state)
+
+  return (
+    <table>
+      <tbody>
+        {state?.flatMap(group =>
+          group.members.map(light => (
+            <tr
+              key={light.friendlyName}
+              style={{
+                fontWeight:
+                  light.latestReceivedState?.state === 'ON'
+                    ? 'bold'
+                    : 'initial',
+              }}
+            >
+              <td>{group.friendlyName}</td>
+              <td>{light.friendlyName}</td>
+              <td>{light.latestReceivedState?.state}</td>
+              <td>{light.latestReceivedState?.brightness}</td>
+            </tr>
+          )),
+        )}
+      </tbody>
+    </table>
+  )
 }
 
 export default App
