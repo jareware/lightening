@@ -43,59 +43,43 @@ function App() {
     }
   }, [])
 
-  console.log(state)
-
   return (
-    <table>
-      <tbody>
-        {state?.flatMap(group =>
-          group.members.map(light => (
-            <tr
-              key={light.friendlyName}
-              style={{
-                fontWeight:
-                  light.latestReceivedState?.state === 'ON'
-                    ? 'bold'
-                    : 'initial',
-              }}
+    <>
+      {state?.flatMap(group => {
+        const isOff = group.members.every(
+          light => light.latestReceivedState?.state === 'OFF',
+        )
+        const brightness = Math.round(
+          (group.members
+            .map(light => light.latestReceivedState?.brightness ?? 0)
+            .reduce((memo, next) => memo + next, 0) /
+            group.members.length /
+            254) *
+            100,
+        )
+        return (
+          <div
+            key={group.friendlyName}
+            className={'light ' + (isOff ? 'off' : 'on')}
+          >
+            <label htmlFor={group.friendlyName}>{group.friendlyName}</label>
+            <button
+              id={group.friendlyName}
+              onClick={() =>
+                socket.current?.send(
+                  JSON.stringify({
+                    device: group.friendlyName,
+                    brightness: isOff ? 254 : 0,
+                  }),
+                )
+              }
             >
-              <td>{group.friendlyName}</td>
-              <td>{light.friendlyName}</td>
-              <td>{light.latestReceivedState?.state}</td>
-              <td>{light.latestReceivedState?.brightness}</td>
-              <td>
-                <button
-                  onClick={() => {
-                    socket.current?.send(
-                      JSON.stringify({
-                        device: light.friendlyName,
-                        brightness: 254,
-                      }),
-                    )
-                  }}
-                >
-                  ON
-                </button>
-              </td>
-              <td>
-                <button
-                  onClick={() => {
-                    socket.current?.send(
-                      JSON.stringify({
-                        device: light.friendlyName,
-                        brightness: 0,
-                      }),
-                    )
-                  }}
-                >
-                  OFF
-                </button>
-              </td>
-            </tr>
-          )),
-        )}
-      </tbody>
-    </table>
+              {isOff ? 'OFF' : brightness + '%'}
+            </button>
+          </div>
+        )
+      })}
+    </>
   )
 }
 
