@@ -7,7 +7,11 @@ function App() {
   const [state, setState] = useState<LightGroups | undefined>()
   const socket = useRef<WebSocket | undefined>()
   useEffect(() => {
-    socket.current = new WebSocket(`ws://${location.hostname}:${PORT}/`)
+    socket.current = new WebSocket(
+      process.env.NODE_ENV === 'production'
+        ? `ws://${location.hostname}:${location.port}/` // in prod, connect to whatever port the UI was served from
+        : `ws://${location.hostname}:${PORT}/`, // in development, we can't connect through the CRA proxy, so connect directly to server process
+    )
     socket.current.onopen = e => {
       // socket.current.send('My name is John')
     }
