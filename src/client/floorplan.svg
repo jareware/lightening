@@ -53,6 +53,8 @@
   <path class="wall underline" d="M 32 720 h 168"></path>
   <path class="wall underline" d="M 773 594 l -263 46 v 93 h -111"></path>
   <path class="wall underline" d="M 725 348 l 193 -34 l 48 248 l -194 32"></path>
+  <path class="wall underline" d="M 425 585 h 185 l 6 36"></path>
+  <path class="wall underline" d="M 510 583 v 60"></path>
 
   <path class="wall" d="M 32 27 v 818 h 790 L 662 27 Z" stroke-dasharray="1086 55 507 94 26 50 57 160 5 54 147 160 181 50 34 107 85 93 18 49"></path>
   <path class="wall" d="M 274 27 v 308 h -241" stroke-dasharray="237 55 139 48"></path>
@@ -65,4 +67,6 @@
   <path class="wall" d="M 376 336 h 51 v 249 h -58"></path>
   <path class="wall" d="M 773 594 l -263 46 v 93 h -111" stroke-dasharray="288 54"></path>
   <path class="wall" d="M 460 734 v 111"></path>
+  <path class="wall" d="M 425 585 h 185 l 6 36" stroke-dasharray="17 55 170"></path>
+
 </svg>
