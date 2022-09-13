@@ -47,12 +47,16 @@ export async function createWebServer(command: CommandModule) {
     }
     ws.on('message', (msg: string) => {
       console.log('Got message from socket:', msg)
-      const parsed = JSON.parse(msg)
-      command.setNewLightStateIfNeeded(
-        parsed.device,
-        parsed.brightness,
-        prevLightGroups,
-      )
+      try {
+        const parsed = JSON.parse(msg)
+        command.setNewLightStateIfNeeded(
+          parsed.device,
+          parsed.brightness,
+          prevLightGroups,
+        )
+      } catch (err) {
+        console.log('Received malformed data from client')
+      }
     })
     ws.on('close', () => {
       console.log('Connection closing')
