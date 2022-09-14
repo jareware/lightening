@@ -112,6 +112,7 @@ function createRetryingWebSocket(
 ) {
   let socket = createWebSocket(url, onMessage, _onStatusChange)
   let timeout: NodeJS.Timeout | undefined
+  let backoff = 0
 
   return {
     send: (data: string) => socket.send(data),
@@ -123,12 +124,15 @@ function createRetryingWebSocket(
 
   function _onStatusChange(connected: boolean) {
     onStatusChange(connected)
-    if (!connected) {
+    if (connected) {
+      backoff = 0
+    } else {
       socket.dispose()
       setTimeout(
         () => (socket = createWebSocket(url, onMessage, _onStatusChange)),
-        5000,
+        backoff,
       )
+      backoff = Math.min(backoff + 1000, 5000)
     }
   }
 }
