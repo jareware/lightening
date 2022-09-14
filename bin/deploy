@@ -2,6 +2,14 @@
 
 set -euo pipefail # exit on error; treat unset variables as errors; exit on errors in piped commands
 
+npm run build:client
+mv build client-build
+npm run build:server
+mv client-build build
+
+docker buildx build --platform linux/arm -t ghcr.io/jareware/lightening:latest .
+docker push ghcr.io/jareware/lightening:latest
+
 ssh pi@192.168.1.3 bash -c '
   docker pull ghcr.io/jareware/lightening:latest
   docker rm -f lightening
