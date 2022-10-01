@@ -24,9 +24,12 @@ export function FloorPlan() {
         <Wall path="M 32 720 h 168" dash="99 47" />
         <Wall path="M 273 685 h -73 v 160" />
         <Wall path="M 376 336 h 51 v 249 h -58" />
+        <Wall path="M 510 583 v 60" light />
         <Wall path="M 773 594 l -263 46 v 93 h -111" dash="288 54" />
         <Wall path="M 460 734 v 111" />
+        <Wall path="M 425 585 h 185 l 6 36" dash="17 55 170" />
         <Wall path="M 725 348 l 193 -34 l 48 248 l -194 32" light />
+        <Wall path="M 430 365 l 290 -32" dash="17 55 1000" />
       </svg>
     </div>
   )
