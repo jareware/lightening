@@ -78,10 +78,11 @@ function Wall(props: {
   dash?: string
   filled?: boolean
   light?: boolean
+  highlight?: boolean
 }) {
   const style: CSSProperties = {
     strokeWidth: 15,
-    stroke: props.light ? 'lightgray' : 'black',
+    stroke: props.highlight ? 'red' : props.light ? 'lightgray' : 'black',
     fill: props.filled ? 'black' : 'transparent',
     strokeLinecap: 'butt',
     strokeLinejoin: 'miter',
