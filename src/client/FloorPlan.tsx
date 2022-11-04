@@ -19,7 +19,7 @@ export function FloorPlan() {
         />
         <Wall
           note="ulkoseinät"
-          path="M 32 27 v 818 h 790 L 662 27 Z"
+          path="M 32 27 v 818 h 790 L 662 27 h -637.5" // note: finishing with "Z" won't render correctly on Safari :shrug:
           dash="0 1086 70 492 94 26 50 67 139 15 55 147 160 181 50 34 107 85 93 18 49 0"
         />
         <Wall
@@ -88,16 +88,20 @@ function Wall(props: {
     strokeLinejoin: 'miter',
     pointerEvents: 'none', // even though walls are rendered on top of other things, make them click-through
   }
-  return (
+  return props.dash ? (
     <>
-      <path d={props.path} style={style} />
-      {props.dash && (
-        <path
-          d={props.path}
-          style={{ ...style, stroke: 'lightgray' }}
-          strokeDasharray={props.dash}
-        />
-      )}
+      <path
+        d={props.path}
+        style={{ ...style }}
+        strokeDasharray={props.dash.replace(/^0 /, '') + ' 0'}
+      />
+      <path
+        d={props.path}
+        style={{ ...style, stroke: 'lightgray' }}
+        strokeDasharray={props.dash}
+      />
     </>
+  ) : (
+    <path d={props.path} style={style} />
   )
 }
