@@ -16,10 +16,10 @@ export function FloorPlan() {
         <Wall
           note="parveke"
           path={toPath([
-            [726, 348],
+            [725, 348],
             [918, 314],
             [966, 560],
-            [774, 594],
+            [773, 594],
           ])}
           light
         />
@@ -30,26 +30,27 @@ export function FloorPlan() {
             [32, 845],
             [822, 845],
             [662, 27],
-            [24.5, 27], // note: finishing with "Z" won't render correctly on Safari :shrug:
+            [32, 27],
+            [32, 40], // note: finishing with "Z" won't render correctly on Safari → draw a bit over the existing line
           ])}
           dash="0 1086 70 492 94 26 50 67 139 15 55 147 160 181 50 34 107 85 93 18 49 0"
         />
         <Wall
           note="makkari"
           path={toPath([
-            [274, 29],
+            [274, 27],
             [274, 335],
-            [34, 335],
+            [32, 335],
           ])}
           dash="0 230 55 148 55 0"
         />
         <Wall
           note="käytävän vasen seinä"
           path={toPath([
-            [230, 337],
+            [230, 335],
             [230, 585],
             [274, 585],
-            [274, 842],
+            [274, 845],
           ])}
           dash="0 313 55 90 55 0"
         />
@@ -69,8 +70,8 @@ export function FloorPlan() {
           path={toPath([
             [169, 482],
             [169, 455],
-            [224, 455],
-            [224, 482],
+            [230, 455],
+            [230, 482],
             [169, 482],
           ])}
           filled
@@ -78,48 +79,48 @@ export function FloorPlan() {
         <Wall
           note="kylppärin ja vaatehuoneen väliseinä"
           path={toPath([
-            [32, 483],
-            [230, 483],
+            [32, 482],
+            [230, 482],
           ])}
           dash="0 59 55 100 0"
         />
         <Wall
           note="saunan väliseinä"
           path={toPath([
-            [34, 720],
-            [196, 720],
+            [32, 720],
+            [200, 720],
           ])}
           dash="0 90 55 0"
         />
         <Wall
           note="pikkuvessan seinä"
           path={toPath([
-            [271, 685],
+            [274, 685],
             [200, 685],
-            [200, 843],
+            [200, 845],
           ])}
         />
         <Wall
           note="keittiön oikea seinä"
           path={toPath([
-            [376, 336],
+            [382, 336],
             [427, 336],
             [427, 585],
-            [369, 585],
+            [382, 585],
           ])}
         />
         <Wall
           note="siivouskaapin ovi"
           path={toPath([
-            [510, 587],
-            [510, 637],
+            [510, 585],
+            [510, 640],
           ])}
           light
         />
         <Wall
           note="Emman huoneen seinä 1"
           path={toPath([
-            [772, 594],
+            [773, 594],
             [510, 640],
             [510, 733],
             [399, 733],
@@ -127,26 +128,26 @@ export function FloorPlan() {
           dash="0 285 55 0"
         />
         <Wall
-          note="Emman huoneen seinä 1"
+          note="Emman huoneen seinä 2"
           path={toPath([
-            [460, 735],
-            [460, 844],
+            [460, 733],
+            [460, 845],
           ])}
         />
         <Wall
           note="siivouskaapin ulkoseinä"
           path={toPath([
-            [429, 585],
+            [427, 585],
             [610, 585],
-            [616, 621],
+            [616, 621.5],
           ])}
           dash="0 18 55 170 0"
         />
         <Wall
           note="olohuoneen ja työhuoneen väliseinä"
           path={toPath([
-            [430, 365],
-            [720, 333],
+            [427, 365],
+            [722, 333],
           ])}
           dash="0 17 55 1000 0"
         />
