@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import React, { CSSProperties, useEffect, useRef, useState } from 'react'
 import 'src/client/App.css'
 
@@ -14,57 +15,139 @@ export function FloorPlan() {
       >
         <Wall
           note="parveke"
-          path="M 726 348 l 192 -34 l 48 246 l -192 34"
+          path={toPath([
+            [726, 348],
+            [918, 314],
+            [966, 560],
+            [774, 594],
+          ])}
           light
         />
         <Wall
           note="ulkoseinät"
-          path="M 32 27 v 818 h 790 L 662 27 h -637.5" // note: finishing with "Z" won't render correctly on Safari :shrug:
+          path={toPath([
+            [32, 27],
+            [32, 845],
+            [822, 845],
+            [662, 27],
+            [24.5, 27], // note: finishing with "Z" won't render correctly on Safari :shrug:
+          ])}
           dash="0 1086 70 492 94 26 50 67 139 15 55 147 160 181 50 34 107 85 93 18 49 0"
         />
         <Wall
           note="makkari"
-          path="M 274 29 v 306 h -240"
+          path={toPath([
+            [274, 29],
+            [274, 335],
+            [34, 335],
+          ])}
           dash="0 230 55 148 55 0"
         />
         <Wall
           note="käytävän vasen seinä"
-          path="M 230 337 v 248 h 44 v 257"
+          path={toPath([
+            [230, 337],
+            [230, 585],
+            [274, 585],
+            [274, 842],
+          ])}
           dash="0 313 55 90 55 0"
         />
         <Wall
           note="vaatehuoneen vasen kotelo"
-          path="M 32 456 h 37 v 26 h -37 Z"
+          path={toPath([
+            [32, 456],
+            [69, 456],
+            [69, 482],
+            [32, 482],
+            [32, 456],
+          ])}
           filled
         />
         <Wall
           note="vaatehuoneen oikea kotelo"
-          path="M 169 482 v -27 h 55 v 27 Z"
+          path={toPath([
+            [169, 482],
+            [169, 455],
+            [224, 455],
+            [224, 482],
+            [169, 482],
+          ])}
           filled
         />
         <Wall
           note="kylppärin ja vaatehuoneen väliseinä"
-          path="M 32 483 h 198"
+          path={toPath([
+            [32, 483],
+            [230, 483],
+          ])}
           dash="0 59 55 100 0"
         />
-        <Wall note="saunan väliseinä" path="M 34 720 h 162" dash="0 90 55 0" />
-        <Wall note="pikkuvessan seinä" path="M 271 685 h -71 v 158" />
-        <Wall note="keittiön oikea seinä" path="M 376 336 h 51 v 249 h -58" />
-        <Wall note="siivouskaapin ovi" path="M 510 587 v 50" light />
+        <Wall
+          note="saunan väliseinä"
+          path={toPath([
+            [34, 720],
+            [196, 720],
+          ])}
+          dash="0 90 55 0"
+        />
+        <Wall
+          note="pikkuvessan seinä"
+          path={toPath([
+            [271, 685],
+            [200, 685],
+            [200, 843],
+          ])}
+        />
+        <Wall
+          note="keittiön oikea seinä"
+          path={toPath([
+            [376, 336],
+            [427, 336],
+            [427, 585],
+            [369, 585],
+          ])}
+        />
+        <Wall
+          note="siivouskaapin ovi"
+          path={toPath([
+            [510, 587],
+            [510, 637],
+          ])}
+          light
+        />
         <Wall
           note="Emman huoneen seinä 1"
-          path="M 772 594 l -262 46 v 93 h -111"
+          path={toPath([
+            [772, 594],
+            [510, 640],
+            [510, 733],
+            [399, 733],
+          ])}
           dash="0 285 55 0"
         />
-        <Wall note="Emman huoneen seinä 1" path="M 460 735 v 109" />
+        <Wall
+          note="Emman huoneen seinä 1"
+          path={toPath([
+            [460, 735],
+            [460, 844],
+          ])}
+        />
         <Wall
           note="siivouskaapin ulkoseinä"
-          path="M 429 585 h 181 l 6 36"
+          path={toPath([
+            [429, 585],
+            [610, 585],
+            [616, 621],
+          ])}
           dash="0 18 55 170 0"
         />
         <Wall
           note="olohuoneen ja työhuoneen väliseinä"
-          path="M 430 365 l 290 -32"
+          path={toPath([
+            [430, 365],
+            [720, 333],
+          ])}
           dash="0 17 55 1000 0"
         />
       </svg>
@@ -104,4 +187,42 @@ function Wall(props: {
   ) : (
     <path d={props.path} style={style} />
   )
+}
+
+function convert(input: string) {
+  const parts = input.split(' ')
+  const out: number[] = []
+  while (parts.length) {
+    const cmd = parts.shift()
+    if (cmd === 'M') {
+      out.push(Number(parts.shift()))
+      out.push(Number(parts.shift()))
+    } else if (cmd === 'v') {
+      const last = _.takeRight(out, 2).map(Number)
+      out.push(last[0])
+      out.push(last[1] + Number(parts.shift()!))
+    } else if (cmd === 'h') {
+      const last = _.takeRight(out, 2).map(Number)
+      out.push(last[0] + Number(parts.shift()!))
+      out.push(last[1])
+    } else if (cmd === 'L') {
+      out.push(Number(parts.shift()))
+      out.push(Number(parts.shift()))
+    } else if (cmd === 'l') {
+      const last = _.takeRight(out, 2).map(Number)
+      out.push(last[0] + Number(parts.shift()!))
+      out.push(last[1] + Number(parts.shift()!))
+    } else if (cmd === 'Z') {
+      const first = _.take(out, 2).map(Number)
+      out.push(first[0])
+      out.push(first[1])
+    } else {
+      console.warn('UNKNOWN:', cmd)
+    }
+  }
+  console.log(JSON.stringify(_.chunk(out, 2)))
+}
+
+function toPath(path: [number, number][]) {
+  return path.map((xy, i) => `${i === 0 ? 'M' : 'L'} ${xy.join(' ')}`).join(' ')
 }
