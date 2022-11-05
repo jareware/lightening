@@ -189,40 +189,6 @@ function Wall(props: {
   )
 }
 
-function convert(input: string) {
-  const parts = input.split(' ')
-  const out: number[] = []
-  while (parts.length) {
-    const cmd = parts.shift()
-    if (cmd === 'M') {
-      out.push(Number(parts.shift()))
-      out.push(Number(parts.shift()))
-    } else if (cmd === 'v') {
-      const last = _.takeRight(out, 2).map(Number)
-      out.push(last[0])
-      out.push(last[1] + Number(parts.shift()!))
-    } else if (cmd === 'h') {
-      const last = _.takeRight(out, 2).map(Number)
-      out.push(last[0] + Number(parts.shift()!))
-      out.push(last[1])
-    } else if (cmd === 'L') {
-      out.push(Number(parts.shift()))
-      out.push(Number(parts.shift()))
-    } else if (cmd === 'l') {
-      const last = _.takeRight(out, 2).map(Number)
-      out.push(last[0] + Number(parts.shift()!))
-      out.push(last[1] + Number(parts.shift()!))
-    } else if (cmd === 'Z') {
-      const first = _.take(out, 2).map(Number)
-      out.push(first[0])
-      out.push(first[1])
-    } else {
-      console.warn('UNKNOWN:', cmd)
-    }
-  }
-  console.log(JSON.stringify(_.chunk(out, 2)))
-}
-
 function toPath(path: [number, number][]) {
   return path.map((xy, i) => `${i === 0 ? 'M' : 'L'} ${xy.join(' ')}`).join(' ')
 }
