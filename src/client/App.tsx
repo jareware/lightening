@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import 'src/client/App.css'
+import { FloorPlan } from 'src/client/FloorPlan'
 import { LightGroups } from 'src/server/state'
 import { PORT } from 'src/shared/config'
 
@@ -12,45 +13,9 @@ function App() {
   const { connected, state, send } = useServerConnection()
 
   if (!connected) return <pre>NOT CONNECTED</pre>
+  if (!state) return <pre>NO DATA</pre>
 
-  return (
-    <>
-      {state?.flatMap(group => {
-        const isOff = group.members.every(
-          light => light.latestReceivedState?.state === 'OFF',
-        )
-        const brightness = Math.round(
-          (group.members
-            .map(light => light.latestReceivedState?.brightness ?? 0)
-            .reduce((memo, next) => memo + next, 0) /
-            group.members.length /
-            254) *
-            100,
-        )
-        return (
-          <div
-            key={group.friendlyName}
-            className={'light ' + (isOff ? 'off' : 'on')}
-          >
-            <label htmlFor={group.friendlyName}>{group.friendlyName}</label>
-            <button
-              id={group.friendlyName}
-              onClick={() =>
-                send(
-                  JSON.stringify({
-                    device: group.friendlyName,
-                    brightness: isOff ? 254 : 0,
-                  }),
-                )
-              }
-            >
-              {isOff ? 'OFF' : brightness + '%'}
-            </button>
-          </div>
-        )
-      })}
-    </>
-  )
+  return <FloorPlan state={state} send={send} />
 }
 
 export default App
