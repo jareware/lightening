@@ -8,11 +8,139 @@ export function FloorPlan() {
       <svg
         version="1.1"
         baseProfile="full"
-        viewBox="0 0 1000 880" // note: full view is "0 0 1000 880"
+        viewBox="0 0 860 880" // note: full view is "0 0 1000 880"
         preserveAspectRatio="xMidYMid meet"
         xmlns="http://www.w3.org/2000/svg"
         style={{ maxHeight: '80vh' }}
       >
+        <Zone
+          note="työhuone"
+          path={[
+            [427, 365],
+            [722, 333],
+            [773, 594],
+            [616, 621.5],
+            [610, 585],
+            [427, 585],
+            [427, 365],
+          ]}
+          on
+        />
+
+        <Zone
+          note="olohuone"
+          path={[
+            [722, 333],
+            [662, 27],
+            [427, 27],
+            [427, 336],
+            [427, 365],
+            [722, 333],
+          ]}
+          on
+        />
+
+        <Zone
+          note="ruokapöytä"
+          path={[
+            [274, 27],
+            [274, 335],
+            [427, 336],
+            [427, 27],
+            [274, 27],
+          ]}
+          on
+        />
+
+        <Zone
+          note="keittiö"
+          path={[
+            [382, 336],
+            [382, 585],
+            [274, 585],
+            [274, 335],
+            [382, 336],
+          ]}
+          on
+        />
+
+        <Zone
+          note="pitkä työtaso"
+          path={[
+            [274, 335],
+            [230, 335],
+            [230, 585],
+            [274, 585],
+            [274, 335],
+          ]}
+          on
+        />
+
+        <Zone
+          note="lyhyt työtaso"
+          path={[
+            [382, 336],
+            [427, 336],
+            [427, 585],
+            [382, 585],
+            [382, 336],
+          ]}
+          on
+        />
+
+        <Zone
+          note="eteinen"
+          path={[
+            [274, 585],
+            [510, 585],
+            [510, 733],
+            [460, 733],
+            [460, 845],
+            [274, 845],
+            [274, 585],
+          ]}
+          on
+        />
+
+        <Zone
+          note="parveke"
+          path={[
+            [725, 348],
+            [918, 314],
+            [966, 560],
+            [773, 594],
+          ]}
+          on
+        />
+
+        <Zone
+          note="pikkuvessa"
+          path={[
+            [274, 685],
+            [200, 685],
+            [200, 845],
+            [274, 845],
+            [274, 685],
+          ]}
+          on
+        />
+
+        <Zone
+          note="kylppäri"
+          path={[
+            [32, 482],
+            [230, 482],
+            [230, 585],
+            [274, 585],
+            [274, 685],
+            [200, 685],
+            [200, 720],
+            [32, 720],
+            [32, 482],
+          ]}
+          on
+        />
+
         <Wall
           note="parveke"
           path={[
@@ -171,7 +299,7 @@ function Wall(props: {
     strokeWidth: 15,
     stroke: props.highlight ? 'red' : props.light ? 'lightgray' : 'black',
     fill: props.filled ? 'black' : 'transparent',
-    strokeLinecap: 'butt',
+    strokeLinecap: 'butt', // TODO: Should probably be 'square' after all :sob:
     strokeLinejoin: 'miter',
     pointerEvents: 'none', // even though walls are rendered on top of other things, make them click-through
   }
@@ -191,6 +319,20 @@ function Wall(props: {
   ) : (
     <path d={toPath(props.path)} style={style} />
   )
+}
+
+function Zone(props: {
+  note?: string
+  path: [number, number][]
+  on?: boolean
+  light?: boolean
+}) {
+  const style: CSSProperties = {
+    strokeWidth: 1, // this ensures adjacent zones overlap, and the background will never shine through
+    stroke: '#e8d100',
+    fill: props.on ? '#e8d100' : 'transparent',
+  }
+  return <path d={toPath(props.path)} style={style} />
 }
 
 function toPath(path: [number, number][]) {
