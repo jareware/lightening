@@ -3,7 +3,10 @@ import React, { CSSProperties, useEffect, useRef, useState } from 'react'
 import 'src/client/App.css'
 import { LightGroups } from 'src/server/state'
 
-export function FloorPlan(props: { state: LightGroups }) {
+export function FloorPlan(props: {
+  state: LightGroups
+  send: (data: string) => void | undefined
+}) {
   return (
     <div>
       <svg
@@ -26,6 +29,14 @@ export function FloorPlan(props: { state: LightGroups }) {
             [427, 365],
           ]}
           on={isOn(props.state, 'työhuone_group')}
+          onClick={() =>
+            props.send(
+              JSON.stringify({
+                device: 'työhuone_group',
+                brightness: isOn(props.state, 'työhuone_group') ? 0 : 254,
+              }),
+            )
+          }
         />
 
         <Zone
@@ -39,6 +50,14 @@ export function FloorPlan(props: { state: LightGroups }) {
             [722, 333],
           ]}
           on={isOn(props.state, 'olkkari_group')}
+          onClick={() =>
+            props.send(
+              JSON.stringify({
+                device: 'olkkari_group',
+                brightness: isOn(props.state, 'olkkari_group') ? 0 : 254,
+              }),
+            )
+          }
         />
 
         <Zone
@@ -51,6 +70,14 @@ export function FloorPlan(props: { state: LightGroups }) {
             [274, 27],
           ]}
           on={isOn(props.state, 'ruokapöytä_group')}
+          onClick={() =>
+            props.send(
+              JSON.stringify({
+                device: 'ruokapöytä_group',
+                brightness: isOn(props.state, 'ruokapöytä_group') ? 0 : 254,
+              }),
+            )
+          }
         />
 
         <Zone
@@ -63,6 +90,14 @@ export function FloorPlan(props: { state: LightGroups }) {
             [382, 336],
           ]}
           on={isOn(props.state, 'keittiö_group')}
+          onClick={() =>
+            props.send(
+              JSON.stringify({
+                device: 'keittiö_group',
+                brightness: isOn(props.state, 'keittiö_group') ? 0 : 254,
+              }),
+            )
+          }
         />
 
         <Zone
@@ -75,6 +110,14 @@ export function FloorPlan(props: { state: LightGroups }) {
             [274, 335],
           ]}
           on={isOn(props.state, 'tiskipöytä_group')}
+          onClick={() =>
+            props.send(
+              JSON.stringify({
+                device: 'tiskipöytä_group',
+                brightness: isOn(props.state, 'tiskipöytä_group') ? 0 : 254,
+              }),
+            )
+          }
         />
 
         <Zone
@@ -87,6 +130,14 @@ export function FloorPlan(props: { state: LightGroups }) {
             [382, 336],
           ]}
           on={isOn(props.state, 'tiskipöytä_group')}
+          onClick={() =>
+            props.send(
+              JSON.stringify({
+                device: 'tiskipöytä_group',
+                brightness: isOn(props.state, 'tiskipöytä_group') ? 0 : 254,
+              }),
+            )
+          }
         />
 
         <Zone
@@ -101,6 +152,14 @@ export function FloorPlan(props: { state: LightGroups }) {
             [274, 585],
           ]}
           on={isOn(props.state, 'eteinen_group')}
+          onClick={() =>
+            props.send(
+              JSON.stringify({
+                device: 'eteinen_group',
+                brightness: isOn(props.state, 'eteinen_group') ? 0 : 254,
+              }),
+            )
+          }
         />
 
         <Zone
@@ -112,6 +171,14 @@ export function FloorPlan(props: { state: LightGroups }) {
             [773, 594],
           ]}
           on={isOn(props.state, 'parveke_group')}
+          onClick={() =>
+            props.send(
+              JSON.stringify({
+                device: 'parveke_group',
+                brightness: isOn(props.state, 'parveke_group') ? 0 : 254,
+              }),
+            )
+          }
         />
 
         <Zone
@@ -124,6 +191,14 @@ export function FloorPlan(props: { state: LightGroups }) {
             [274, 685],
           ]}
           on={isOn(props.state, 'pikkuvessa_group')}
+          onClick={() =>
+            props.send(
+              JSON.stringify({
+                device: 'pikkuvessa_group',
+                brightness: isOn(props.state, 'pikkuvessa_group') ? 0 : 254,
+              }),
+            )
+          }
         />
 
         <Zone
@@ -140,6 +215,14 @@ export function FloorPlan(props: { state: LightGroups }) {
             [32, 482],
           ]}
           on={isOn(props.state, 'kylppäri_group')}
+          onClick={() =>
+            props.send(
+              JSON.stringify({
+                device: 'kylppäri_group',
+                brightness: isOn(props.state, 'kylppäri_group') ? 0 : 254,
+              }),
+            )
+          }
         />
 
         <Wall
@@ -327,13 +410,14 @@ function Zone(props: {
   path: [number, number][]
   on?: boolean
   light?: boolean
+  onClick?: () => void
 }) {
   const style: CSSProperties = {
     strokeWidth: 1, // this ensures adjacent zones overlap, and the background will never shine through
     stroke: props.on ? '#e8d100' : 'transparent',
     fill: props.on ? '#e8d100' : 'transparent',
   }
-  return <path d={toPath(props.path)} style={style} />
+  return <path d={toPath(props.path)} style={style} onClick={props.onClick} />
 }
 
 function toPath(path: [number, number][]) {
