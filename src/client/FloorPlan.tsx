@@ -1,8 +1,9 @@
 import _ from 'lodash'
 import React, { CSSProperties, useEffect, useRef, useState } from 'react'
 import 'src/client/App.css'
+import { LightGroups } from 'src/server/state'
 
-export function FloorPlan() {
+export function FloorPlan(props: { state: LightGroups }) {
   return (
     <div>
       <svg
@@ -24,7 +25,7 @@ export function FloorPlan() {
             [427, 585],
             [427, 365],
           ]}
-          on
+          on={isOn(props.state, 'työhuone_group')}
         />
 
         <Zone
@@ -37,7 +38,7 @@ export function FloorPlan() {
             [427, 365],
             [722, 333],
           ]}
-          on
+          on={isOn(props.state, 'olkkari_group')}
         />
 
         <Zone
@@ -49,7 +50,7 @@ export function FloorPlan() {
             [427, 27],
             [274, 27],
           ]}
-          on
+          on={isOn(props.state, 'ruokapöytä_group')}
         />
 
         <Zone
@@ -61,7 +62,7 @@ export function FloorPlan() {
             [274, 335],
             [382, 336],
           ]}
-          on
+          on={isOn(props.state, 'keittiö_group')}
         />
 
         <Zone
@@ -73,7 +74,7 @@ export function FloorPlan() {
             [274, 585],
             [274, 335],
           ]}
-          on
+          on={isOn(props.state, 'tiskipöytä_group')}
         />
 
         <Zone
@@ -85,7 +86,7 @@ export function FloorPlan() {
             [382, 585],
             [382, 336],
           ]}
-          on
+          on={isOn(props.state, 'tiskipöytä_group')}
         />
 
         <Zone
@@ -99,7 +100,7 @@ export function FloorPlan() {
             [274, 845],
             [274, 585],
           ]}
-          on
+          on={isOn(props.state, 'eteinen_group')}
         />
 
         <Zone
@@ -110,7 +111,7 @@ export function FloorPlan() {
             [966, 560],
             [773, 594],
           ]}
-          on
+          on={isOn(props.state, 'parveke_group')}
         />
 
         <Zone
@@ -122,7 +123,7 @@ export function FloorPlan() {
             [274, 845],
             [274, 685],
           ]}
-          on
+          on={isOn(props.state, 'pikkuvessa_group')}
         />
 
         <Zone
@@ -138,7 +139,7 @@ export function FloorPlan() {
             [32, 720],
             [32, 482],
           ]}
-          on
+          on={isOn(props.state, 'kylppäri_group')}
         />
 
         <Wall
@@ -329,7 +330,7 @@ function Zone(props: {
 }) {
   const style: CSSProperties = {
     strokeWidth: 1, // this ensures adjacent zones overlap, and the background will never shine through
-    stroke: '#e8d100',
+    stroke: props.on ? '#e8d100' : 'transparent',
     fill: props.on ? '#e8d100' : 'transparent',
   }
   return <path d={toPath(props.path)} style={style} />
@@ -337,4 +338,12 @@ function Zone(props: {
 
 function toPath(path: [number, number][]) {
   return path.map((xy, i) => `${i === 0 ? 'M' : 'L'} ${xy.join(' ')}`).join(' ')
+}
+
+function isOn(state: LightGroups, groupFriendlyName: string) {
+  const group = state.find(group => group.friendlyName === groupFriendlyName)
+  if (!group) return false
+  return !group.members.every(
+    light => light.latestReceivedState?.state === 'OFF',
+  )
 }
