@@ -23,7 +23,7 @@ export async function createCommandModule(mqtt: MqttClient) {
   async function setNewLightState(
     device: string | { friendlyName: string },
     brightness: number,
-    transition = 2,
+    transition = 0.75, // matches the transition time the wall switches use
   ) {
     await mqtt.publishOutgoingMessage(['zigbee2mqtt', nameOf(device), 'set'], {
       brightness,
