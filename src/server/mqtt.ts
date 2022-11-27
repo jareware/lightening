@@ -26,7 +26,9 @@ export async function createMqttClient(
         topic: topic.split('/'),
         body: JSON.parse(message.toString()),
       })
-    } catch (err) {}
+    } catch (err) {
+      console.log('Could not parse incoming message: ' + err)
+    }
     if (parsed) {
       for (const callback of callbacks) {
         await callback(parsed)

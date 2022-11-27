@@ -2,6 +2,7 @@ import { CommandModule } from 'src/server/command'
 import { DebugOutput } from 'src/server/debug'
 import {
   ButtonPressMessage,
+  ContactSensorMessage,
   DevicesInitMessage,
   GroupsInitMessage,
   IncomingMessage,
@@ -67,6 +68,12 @@ export async function createStateMachine(
       }
     } else if (isModel(MotionSensorMessage)(message)) {
       processIncomingMotionSensorMessage(message)
+      if (lightGroups) {
+        debug.logAppStateIfNeeded(lightGroups)
+        web.sendAppStateIfNeeded(lightGroups)
+      }
+    } else if (isModel(ContactSensorMessage)(message)) {
+      processIncomingContactSensorMessage(message)
       if (lightGroups) {
         debug.logAppStateIfNeeded(lightGroups)
         web.sendAppStateIfNeeded(lightGroups)
@@ -152,12 +159,17 @@ export async function createStateMachine(
   async function processIncomingMotionSensorMessage(
     message: MotionSensorMessage,
   ) {
+    // No actions right now
+  }
+
+  async function processIncomingContactSensorMessage(
+    message: ContactSensorMessage,
+  ) {
     const [, friendlyName] = message.topic
-    if (friendlyName === 'motion_eteinen') {
+    if (friendlyName === 'siivouskaappi_ovi') {
       command.setNewLightState(
         'siivouskaappi_1',
-        message.body.occupancy ? 254 : 0,
-        1,
+        message.body.contact ? 0 : 254,
       )
     }
   }
