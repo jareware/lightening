@@ -1,0 +1,72 @@
+<svg
+  version="1.1"
+  baseProfile="full"
+  viewBox="0 0 1000 880"
+  preserveAspectRatio="xMidYMid meet"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:lightening="https://github.com/jareware/lightening"
+>
+  <style type="text/css">
+    .wall {
+      stroke: black;
+      stroke-width: 15;
+      fill: transparent;
+      stroke-linecap: butt;
+      stroke-linejoin: miter;
+      pointer-events: none; /* even though walls are rendered on top of other things, make them click-through */
+    }
+    .wall.filled {
+      fill: black;
+    }
+    .wall.underline {
+      stroke: lightgray;
+    }
+    .region {
+      opacity: 0.5;
+      fill: #eaeaea;
+    }
+    .region:hover {
+      opacity: 0.8;
+    }
+    .region[lightening-on] {
+      fill: yellow;
+    }
+  </style>
+
+  <path class="region" lightening-id="144991" d="M 32 27 h 243 v 307 h -243 Z"></path>
+  <path class="region" lightening-id="191614" d="M 32 335 h 198 v 148 h -198 Z"></path>
+  <path class="region" lightening-id="191616" d="M 32 483 h 198 v 104 h 45 v 99 h -76 v 35 h -167 Z"></path>
+  <path class="region" d="M 32 720 h 168 v 127 h -168 Z"></path>
+  <path class="region" lightening-id="191617" d="M 200 685 h 74 v 161 h -74 Z"></path>
+  <path class="region" lightening-id="147734" d="M 274 585 h 154 l 82 60 v 90 h -51 v 113 h -185 Z"></path>
+  <path class="region" lightening-id="191624" d="M 229 334 h 198 v 252 h -197 Z"></path>
+  <path class="region" lightening-id="191615" d="M 274 27 h 153 v 307 h -153 Z"></path>
+  <path class="region" lightening-id="191612" d="M 427 27 h 235 l 60 308 h -295 Z"></path>
+  <path class="region" lightening-id="191620" d="M 427 335 h 295 l 51 260 l -264 50 l -83 -61 Z"></path>
+  <path class="region" lightening-id="173261" d="M 510 641 l 263 -48 l 49 253 h -362 v -113 h 50 Z"></path>
+  <path class="region" lightening-id="191619" d="M 725 349 l 192 -36 l 50 249 l -195 33 Z"></path>
+
+  <path class="wall underline" d="M 32 27 v 818 h 790 L 662 27 Z"></path>
+  <path class="wall underline" d="M 274 27 v 308 h -241"></path>
+  <path class="wall underline" d="M 230 335 v 250 h 44 v 260"></path>
+  <path class="wall underline" d="M 32 483 h 198"></path>
+  <path class="wall underline" d="M 32 720 h 168"></path>
+  <path class="wall underline" d="M 773 594 l -263 46 v 93 h -111"></path>
+  <path class="wall underline" d="M 725 348 l 193 -34 l 48 248 l -194 32"></path>
+  <path class="wall underline" d="M 425 585 h 185 l 6 36"></path>
+  <path class="wall underline" d="M 510 583 v 60"></path>
+
+  <path class="wall" d="M 32 27 v 818 h 790 L 662 27 Z" stroke-dasharray="1086 55 507 94 26 50 67 150 5 54 147 160 181 50 34 107 85 93 18 49"></path>
+  <path class="wall" d="M 274 27 v 308 h -241" stroke-dasharray="237 55 139 48"></path>
+  <path class="wall" d="M 230 335 v 250 h 44 v 260" stroke-dasharray="313 54 83 54"></path>
+  <path class="wall filled" d="M 32 456 h 46 v 26 h -46 Z"></path>
+  <path class="wall filled" d="M 158 482 v -27 h 72 v 27 Z"></path>
+  <path class="wall" d="M 32 483 h 198" stroke-dasharray="66 48 100"></path>
+  <path class="wall" d="M 32 720 h 168" stroke-dasharray="99 47"></path>
+  <path class="wall" d="M 273 685 h -73 v 160"></path>
+  <path class="wall" d="M 376 336 h 51 v 249 h -58"></path>
+  <path class="wall" d="M 773 594 l -263 46 v 93 h -111" stroke-dasharray="288 54"></path>
+  <path class="wall" d="M 460 734 v 111"></path>
+  <path class="wall" d="M 425 585 h 185 l 6 36" stroke-dasharray="17 55 170"></path>
+
+</svg>

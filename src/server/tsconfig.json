@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    // "baseUrl": "../..",
+    "paths": {
+      "src/*": ["../*"]
+    },
+    "outDir": "../../dist",
+    "noEmit": false,
+    "sourceMap": true,
+    "module": "esnext",
+    "strict": true,
+    "target": "esnext",
+    "moduleResolution": "node"
+  },
+  "exclude": ["../../build", "../client"],
+  "include": ["./index.ts"]
+}

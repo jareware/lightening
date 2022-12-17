@@ -1,6 +1,6 @@
-import { MqttClient } from 'src/mqtt'
-import { LightGroups } from 'src/state'
-import { PromiseOf } from 'src/types'
+import { MqttClient } from 'src/server/mqtt'
+import { LightGroups } from 'src/server/state'
+import { PromiseOf } from 'src/server/types'
 
 export type CommandModule = PromiseOf<ReturnType<typeof createCommandModule>>
 export async function createCommandModule(mqtt: MqttClient) {
@@ -23,7 +23,7 @@ export async function createCommandModule(mqtt: MqttClient) {
   async function setNewLightState(
     device: string | { friendlyName: string },
     brightness: number,
-    transition = 2,
+    transition = 0.75, // matches the transition time the wall switches use
   ) {
     await mqtt.publishOutgoingMessage(['zigbee2mqtt', nameOf(device), 'set'], {
       brightness,

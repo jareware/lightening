@@ -1,8 +1,8 @@
 import { Table } from 'console-table-printer'
 import { createWriteStream } from 'fs'
 import _ from 'lodash'
-import { LightGroups } from 'src/state'
-import { PromiseOf } from 'src/types'
+import { LightGroups } from 'src/server/state'
+import { PromiseOf } from 'src/server/types'
 
 export type DebugOutput = PromiseOf<ReturnType<typeof createDebugOutput>>
 export async function createDebugOutput(

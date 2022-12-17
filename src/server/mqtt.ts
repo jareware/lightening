@@ -1,8 +1,8 @@
 import MQTT from 'async-mqtt'
-import { DebugOutput } from 'src/debug'
-import { IncomingMessage } from 'src/messages'
-import { PromiseOf } from 'src/types'
-import { parseAsModel } from 'src/utils'
+import { DebugOutput } from 'src/server/debug'
+import { IncomingMessage } from 'src/server/messages'
+import { PromiseOf } from 'src/server/types'
+import { parseAsModel } from 'src/server/utils'
 
 type Callback = (message: IncomingMessage) => Promise<void>
 
@@ -18,7 +18,7 @@ export async function createMqttClient(
   const callbacks: Callback[] = []
 
   // Add handler for incoming messages:
-  mqtt.on('message', async (topic, message) => {
+  ;(mqtt as any).on('message', async (topic: string, message: Buffer) => {
     debug.logIncomingMessage(topic, message)
     let parsed
     try {
@@ -26,7 +26,9 @@ export async function createMqttClient(
         topic: topic.split('/'),
         body: JSON.parse(message.toString()),
       })
-    } catch (err) {}
+    } catch (err) {
+      console.log('Could not parse incoming message: ' + err)
+    }
     if (parsed) {
       for (const callback of callbacks) {
         await callback(parsed)
