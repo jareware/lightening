@@ -103,11 +103,11 @@ export function FloorPlan(props: {
         <Zone
           note="pitkä työtaso"
           path={[
-            [274, 335],
+            [281, 335],
             [230, 335],
             [230, 585],
-            [274, 585],
-            [274, 335],
+            [281, 585],
+            [281, 335],
           ]}
           on={isOn(props.state, 'tiskipöytä_group')}
           onClick={() =>
@@ -123,11 +123,11 @@ export function FloorPlan(props: {
         <Zone
           note="lyhyt työtaso"
           path={[
-            [382, 336],
+            [376, 336],
             [427, 336],
             [427, 585],
-            [382, 585],
-            [382, 336],
+            [376, 585],
+            [376, 336],
           ]}
           on={isOn(props.state, 'tiskipöytä_group')}
           onClick={() =>
@@ -318,10 +318,10 @@ export function FloorPlan(props: {
         <Wall
           note="keittiön oikea seinä"
           path={[
-            [382, 336],
+            [376, 336],
             [427, 336],
             [427, 585],
-            [382, 585],
+            [376, 585],
           ]}
         />
         <Wall
