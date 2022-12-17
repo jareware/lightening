@@ -8,6 +8,7 @@ import {
   IncomingMessage,
   LightStateMessage,
   MotionSensorMessage,
+  PowerStateMessage,
 } from 'src/server/messages'
 import { PromiseOf } from 'src/server/types'
 import { assertExhausted, isModel } from 'src/server/utils'
@@ -78,6 +79,12 @@ export async function createStateMachine(
         debug.logAppStateIfNeeded(lightGroups)
         web.sendAppStateIfNeeded(lightGroups)
       }
+    } else if (isModel(PowerStateMessage)(message)) {
+      processIncomingPowerStateMessage(message)
+      if (lightGroups) {
+        debug.logAppStateIfNeeded(lightGroups)
+        web.sendAppStateIfNeeded(lightGroups)
+      }
     } else {
       assertExhausted(message)
     }
@@ -128,11 +135,6 @@ export async function createStateMachine(
           : light,
       ),
     }))
-
-    // TODO: DELME
-    if (typeof message.body.brightness !== 'number') {
-      console.log('OBS: Got LightStateMessage without brightness')
-    }
   }
 
   async function processIncomingButtonPressMessage(
@@ -172,6 +174,25 @@ export async function createStateMachine(
         message.body.contact ? 0 : 254,
       )
     }
+  }
+
+  async function processIncomingPowerStateMessage(message: PowerStateMessage) {
+    const [, friendlyName] = message.topic
+    lightGroups = lightGroups?.map(group => ({
+      ...group,
+      members: group.members.map(light =>
+        light.friendlyName === friendlyName
+          ? {
+              ...light,
+              latestReceivedState: {
+                state: message.body.state,
+                brightness: message.body.state === 'ON' ? 254 : 0,
+                updated: new Date(),
+              },
+            }
+          : light,
+      ),
+    }))
   }
 
   async function queryMissingCurrentState() {

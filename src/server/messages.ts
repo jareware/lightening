@@ -44,14 +44,10 @@ export type LightStateMessage = t.TypeOf<typeof LightStateMessage>
 export const LightStateMessage = t.type(
   {
     topic: t.tuple([t.literal('zigbee2mqtt'), t.string]),
-    body: t.intersection([
-      t.type({
-        state: t.union([t.literal('ON'), t.literal('OFF')]),
-      }),
-      t.partial({
-        brightness: t.number,
-      }),
-    ]),
+    body: t.type({
+      state: t.union([t.literal('ON'), t.literal('OFF')]),
+      brightness: t.number,
+    }),
   },
   'LightStateMessage',
 )
@@ -94,6 +90,17 @@ export const ContactSensorMessage = t.type(
   'ContactSensorMessage',
 )
 
+export type PowerStateMessage = t.TypeOf<typeof PowerStateMessage>
+export const PowerStateMessage = t.type(
+  {
+    topic: t.tuple([t.literal('zigbee2mqtt'), t.string]),
+    body: t.type({
+      state: t.union([t.literal('ON'), t.literal('OFF')]),
+    }),
+  },
+  'PowerStateMessage',
+)
+
 export type IncomingMessage = t.TypeOf<typeof IncomingMessage>
 export const IncomingMessage = t.union(
   [
@@ -103,6 +110,7 @@ export const IncomingMessage = t.union(
     ButtonPressMessage,
     MotionSensorMessage,
     ContactSensorMessage,
+    PowerStateMessage,
   ],
   'IncomingMessage',
 )
