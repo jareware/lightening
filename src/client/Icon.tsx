@@ -6,24 +6,25 @@ export function Icon(props: {
   on?: boolean
   onClick?: () => void
 }) {
-  const r = size / 2
+  const r = 35
+  const scale = 1
+  const extra = 10
   return (
-    <g transform={`translate(${props.location})`} onClick={props.onClick}>
-      <circle
-        cx={r}
-        cy={r}
-        r={r + 15}
-        fill="transparent" // i.e. some extra touch area
-      />
-      <circle
-        cx={r}
-        cy={r}
-        r={r + 4}
-        fill={props.on ? '#e8d100' : 'lightgray'}
-        // stroke-width=".05"
-        // stroke="black"
-      />
-      <g transform={`scale(0.75)`} transform-origin={`${r} ${r}`} fill="black">
+    <g
+      transform={`translate(${props.location}) translate(${-r},${-r})`}
+      onClick={props.onClick}
+    >
+      <circle cx={r} cy={r} r={r + extra} fill="transparent" />
+      <circle cx={r} cy={r} r={r} fill={props.on ? '#e8d100' : 'lightgray'} />
+      <g
+        fill="black"
+        transform-origin={`${size / 2} ${size / 2}`}
+        transform={`
+          translate(${r},${r})
+          translate(${-size / 2},${-size / 2})
+          scale(${scale})
+        `}
+      >
         {icons[props.name]}
       </g>
     </g>

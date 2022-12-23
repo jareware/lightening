@@ -370,7 +370,7 @@ export function FloorPlan(props: {
 
         <Icon
           name="Park"
-          location={[460, 55]}
+          location={[465, 90]}
           on={isOn(props.state, 'joulukuusi_group')}
           onClick={() =>
             props.send(
