@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import React, { CSSProperties, useEffect, useRef, useState } from 'react'
 import 'src/client/App.css'
+import { Icon } from 'src/client/Icon'
 import { LightGroups } from 'src/server/state'
 
 export function FloorPlan(props: {
@@ -365,6 +366,20 @@ export function FloorPlan(props: {
             [722, 333],
           ]}
           dash={[17, 55, 1000]}
+        />
+
+        <Icon
+          name="Park"
+          location={[460, 55]}
+          on={isOn(props.state, 'joulukuusi_group')}
+          onClick={() =>
+            props.send(
+              JSON.stringify({
+                device: 'joulukuusi_group',
+                brightness: isOn(props.state, 'joulukuusi_group') ? 0 : 254,
+              }),
+            )
+          }
         />
       </svg>
     </div>
