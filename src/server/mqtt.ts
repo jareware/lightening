@@ -1,8 +1,8 @@
 import MQTT from 'async-mqtt'
 import { DebugOutput } from 'src/server/debug'
-import { IncomingMessage } from 'src/server/messages'
 import { PromiseOf } from 'src/server/types'
 import { parseAsModel } from 'src/server/utils'
+import { IncomingMessage } from 'src/shared/types/messages'
 
 type Callback = (message: IncomingMessage) => Promise<void>
 
