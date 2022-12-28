@@ -47,14 +47,15 @@ export async function createWebServer(command: CommandModule) {
     }
     ws.on('message', (msg: string) => {
       try {
+        console.log('Got command from UI:', msg)
         const parsed = JSON.parse(msg)
         const device = config[parsed.device as DeviceName]
         if (!device) {
           console.log(`Got unknown device "${parsed.device}" from client`)
         } else if (device.type === 'Light') {
-          command.setLightState(parsed.device, parsed.brightness)
+          command.setLightState(device, parsed.brightness)
         } else if (device.type === 'PowerPlug') {
-          command.setPowerState(parsed.device, parsed.brightness > 0)
+          command.setPowerState(device, parsed.brightness > 0)
         } else {
           console.log(`Incompatible command for device "${device.name}"`)
         }

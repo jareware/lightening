@@ -136,6 +136,24 @@ export default configuration({
       ],
     ],
   },
+
+  siivouskaappi_1: {
+    type: 'Light',
+    zones: [
+      [
+        [616, 621.5],
+        [610, 585],
+        [510, 585],
+        [510, 640],
+      ],
+    ],
+    debugZones: false,
+  },
+
+  siivouskaappi_ovi: {
+    type: 'DoorSensor',
+    controls: ['siivouskaappi_1'],
+  },
 })
 
 function configuration<
@@ -144,6 +162,7 @@ function configuration<
       | {
           type: 'Light' | 'PowerPlug'
           zones: [number, number][][]
+          debugZones?: boolean
         }
       | {
           type: 'DoorSensor'

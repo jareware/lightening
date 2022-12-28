@@ -1,4 +1,4 @@
-import React, { CSSProperties } from 'react'
+import React, { CSSProperties, Fragment } from 'react'
 import 'src/client/App.css'
 import config from 'src/shared/config'
 import { Device } from 'src/shared/utils/config'
@@ -179,6 +179,26 @@ export function FloorPlan(props: {
           ]}
           dash={[17, 55, 1000]}
         />
+
+        {Object.values(config).map(
+          (device, i) =>
+            'zones' in device &&
+            'debugZones' in device &&
+            device.debugZones &&
+            device.zones.map((zone, j) => (
+              <Fragment key={String([i, j])}>
+                <path
+                  d={toPath(zone)}
+                  stroke="hotpink"
+                  strokeWidth={3}
+                  fill="transparent"
+                />
+                {zone.map(([x, y], k) => (
+                  <circle cx={x} cy={y} r={5} fill="hotpink" />
+                ))}
+              </Fragment>
+            )),
+        )}
       </svg>
     </div>
   )

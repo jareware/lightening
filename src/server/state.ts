@@ -6,6 +6,7 @@ import { isModel } from 'src/server/utils'
 import { WebServer } from 'src/server/web'
 import config from 'src/shared/config'
 import {
+  ContactSensorMessage,
   DevicesInitMessage,
   GroupsInitMessage,
   IncomingMessage,
@@ -47,6 +48,12 @@ export async function createStateMachine(
     setScene: _.noop,
   }
 
+  function getDeviceState(input: string | { topic: ['zigbee2mqtt', string] }) {
+    const device = getDeviceConfig(input)
+    if (!device) return null
+    return state[device.name]
+  }
+
   async function processIncomingMessage(message: IncomingMessage) {
     if (
       isModel(DevicesInitMessage)(message) ||
@@ -57,6 +64,8 @@ export async function createStateMachine(
       processIncomingLightStateMessage(message)
     } else if (isModel(PowerStateMessage)(message)) {
       processIncomingPowerStateMessage(message)
+    } else if (isModel(ContactSensorMessage)(message)) {
+      processIncomingContactSensorMessage(message)
     } else {
       // TODO: assertExhausted(message)
     }
@@ -95,19 +104,47 @@ export async function createStateMachine(
     }
   }
 
+  async function processIncomingContactSensorMessage(
+    message: ContactSensorMessage,
+  ) {
+    const device = getDeviceConfig(message)
+    if (device?.type !== 'DoorSensor') return
+    const prevState = getDeviceState(message)
+    const doorOpen = !message.body.contact
+    state = {
+      ...state,
+      [device.name]: {
+        doorOpen: !message.body.contact,
+        updated: new Date(),
+      },
+    }
+    if (!prevState) return // this is the init for this device → don't react to changes, as they're not real changes
+    if ('controls' in device) {
+      device.controls.forEach(name => {
+        const controlledDevice = getDeviceConfig(name)
+        if (controlledDevice?.type === 'Light')
+          command.setLightState(controlledDevice, doorOpen ? 254 : 0)
+        if (controlledDevice?.type === 'PowerPlug')
+          command.setPowerState(controlledDevice, doorOpen)
+      })
+    }
+  }
+
   function checkMissingState() {
     const groups = initGroups?.body
     if (!groups)
       throw new Error('Init groups not available when checking missing state')
     Object.values(config).forEach(device => {
-      if (!state[device.name]) {
-        const isGroup = !!groups.find(
-          group => group.friendly_name === device.name,
-        )
-        command.setOptions(isGroup ? 'group' : 'device', device.name, {
-          retain: true, // if a group/device is still missing its state, it's possible it's "retained" option is not set → try to fix it, so it'll work on next startup
-        })
-      }
+      if (state[device.name]) return
+      console.log(
+        `Device "${device.name}" is still missing state → trying to set retained`,
+      )
+      const isGroup = !!groups.find(
+        group => group.friendly_name === device.name,
+      )
+      command.setOptions(isGroup ? 'group' : 'device', device.name, {
+        retain: true, // if a group/device is still missing its state, it's possible it's "retained" option is not set → try to fix it, so it'll work on next startup
+      })
     })
   }
 }

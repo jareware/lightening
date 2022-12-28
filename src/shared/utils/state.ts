@@ -11,5 +11,10 @@ export type StateMap = {
         powerOn: boolean
         updated: Date
       }
+    : Config[K]['type'] extends 'DoorSensor'
+    ? {
+        doorOpen: boolean
+        updated: Date
+      }
     : never
 }
