@@ -19,20 +19,21 @@ export async function createMqttClient(
 
   // Add handler for incoming messages:
   ;(mqtt as any).on('message', async (topic: string, message: Buffer) => {
-    debug.logIncomingMessage(topic, message)
-    let parsed
     try {
-      parsed = parseAsModel(IncomingMessage)({
+      if (shouldIgnoreTopic(topic)) {
+        console.log(`  Ignored Zigbee message ⚫️ ${topic}`)
+        return
+      }
+      const parsed = parseAsModel(IncomingMessage)({
         topic: topic.split('/'),
         body: JSON.parse(message.toString()),
       })
-    } catch (err) {
-      console.log('Could not parse incoming message: ' + err)
-    }
-    if (parsed) {
       for (const callback of callbacks) {
         await callback(parsed)
       }
+      console.log(`Processed Zigbee message 🟢 ${topic}`)
+    } catch (err) {
+      console.log(`Processed Zigbee message 🔴 ${topic} (${err})`)
     }
   })
 
@@ -54,4 +55,12 @@ export async function createMqttClient(
       await mqtt.publish(topic, JSON.stringify(message))
     },
   }
+}
+
+function shouldIgnoreTopic(topic: string) {
+  const [_namespace, friendlyName, detail] = topic.split('/')
+  return (
+    (friendlyName === 'bridge' && !['devices', 'groups'].includes(detail)) ||
+    (friendlyName !== 'bridge' && detail)
+  )
 }

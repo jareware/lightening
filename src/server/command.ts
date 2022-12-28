@@ -1,61 +1,47 @@
 import { MqttClient } from 'src/server/mqtt'
-import { LightGroups } from 'src/server/state'
 import { PromiseOf } from 'src/server/types'
+import { Device } from 'src/shared/utils/config'
 
 export type CommandModule = PromiseOf<ReturnType<typeof createCommandModule>>
 export async function createCommandModule(mqtt: MqttClient) {
   return {
-    queryCurrentState,
-    setNewLightState,
-    setNewLightStateIfNeeded,
+    setLightState,
+    setPowerState,
+    setOptions,
   }
 
-  function nameOf(device: string | { friendlyName: string }) {
-    return typeof device === 'string' ? device : device?.friendlyName
-  }
-
-  async function queryCurrentState(device: string | { friendlyName: string }) {
-    await mqtt.publishOutgoingMessage(['zigbee2mqtt', nameOf(device), 'get'], {
-      state: '',
-    })
-  }
-
-  async function setNewLightState(
-    device: string | { friendlyName: string },
+  async function setLightState(
+    device: Extract<Device, { type: 'Light' }>,
     brightness: number,
     transition = 0.75, // matches the transition time the wall switches use
   ) {
-    await mqtt.publishOutgoingMessage(['zigbee2mqtt', nameOf(device), 'set'], {
+    await mqtt.publishOutgoingMessage(['zigbee2mqtt', device.name, 'set'], {
       brightness,
       state: brightness === 0 ? 'OFF' : 'ON',
       transition,
     })
   }
 
-  async function setNewLightStateIfNeeded(
-    device: string | { friendlyName: string },
-    brightness: number,
-    currentStates: LightGroups,
+  async function setPowerState(
+    device: Extract<Device, { type: 'PowerPlug' }>,
+    powerOn: boolean,
   ) {
-    const isAlreadyInDesiredState = createDesiredStateMatcher(brightness)
-    if (
-      currentStates
-        .find(group => group.friendlyName === nameOf(device))
-        ?.members.every(isAlreadyInDesiredState)
-    ) {
-      console.log(`No need to set ${nameOf(device)}`)
-      return // this group is already set!
-    } else {
-      console.log(`WILL set ${nameOf(device)}`)
-      await setNewLightState(nameOf(device), brightness)
-    }
+    await mqtt.publishOutgoingMessage(['zigbee2mqtt', device.name, 'set'], {
+      state: powerOn ? 'ON' : 'OFF',
+    })
   }
-}
 
-export function createDesiredStateMatcher(brightness: number) {
-  return (light: LightGroups[number]['members'][number]) =>
-    (brightness === 0 && light.latestReceivedState?.state === 'OFF') ||
-    (brightness !== 0 &&
-      light.latestReceivedState?.state === 'ON' &&
-      light.latestReceivedState.brightness === brightness)
+  async function setOptions(
+    type: 'group' | 'device',
+    friendlyName: string,
+    options: { retain?: boolean },
+  ) {
+    await mqtt.publishOutgoingMessage(
+      ['zigbee2mqtt', 'bridge', 'request', type, 'options'],
+      {
+        id: friendlyName,
+        options,
+      },
+    )
+  }
 }

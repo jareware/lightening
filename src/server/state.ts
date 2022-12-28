@@ -1,18 +1,19 @@
+import _ from 'lodash'
 import { CommandModule } from 'src/server/command'
 import { DebugOutput } from 'src/server/debug'
 import { PromiseOf } from 'src/server/types'
-import { assertExhausted, isModel } from 'src/server/utils'
+import { isModel } from 'src/server/utils'
 import { WebServer } from 'src/server/web'
+import config from 'src/shared/config'
 import {
-  ButtonPressMessage,
-  ContactSensorMessage,
   DevicesInitMessage,
   GroupsInitMessage,
   IncomingMessage,
   LightStateMessage,
-  MotionSensorMessage,
   PowerStateMessage,
 } from 'src/shared/types/messages'
+import { getDeviceConfig } from 'src/shared/utils/config'
+import { StateMap } from 'src/shared/utils/state'
 
 export type LightGroups = Array<{
   friendlyName: string
@@ -35,14 +36,15 @@ export async function createStateMachine(
 ) {
   let initDevices: DevicesInitMessage | undefined
   let initGroups: GroupsInitMessage | undefined
-  let lightGroups: LightGroups | undefined
 
-  setInterval(queryMissingCurrentState, 500)
+  let state: StateMap = {}
+
+  setTimeout(checkMissingState, 5000)
 
   // Return public API:
   return {
     processIncomingMessage,
-    setScene,
+    setScene: _.noop,
   }
 
   async function processIncomingMessage(message: IncomingMessage) {
@@ -51,43 +53,14 @@ export async function createStateMachine(
       isModel(GroupsInitMessage)(message)
     ) {
       processIncomingInitMessage(message)
-      if (lightGroups) {
-        debug.logAppStateIfNeeded(lightGroups)
-        web.sendAppStateIfNeeded(lightGroups)
-      }
     } else if (isModel(LightStateMessage)(message)) {
       processIncomingLightStateMessage(message)
-      if (lightGroups) {
-        debug.logAppStateIfNeeded(lightGroups)
-        web.sendAppStateIfNeeded(lightGroups)
-      }
-    } else if (isModel(ButtonPressMessage)(message)) {
-      processIncomingButtonPressMessage(message)
-      if (lightGroups) {
-        debug.logAppStateIfNeeded(lightGroups)
-        web.sendAppStateIfNeeded(lightGroups)
-      }
-    } else if (isModel(MotionSensorMessage)(message)) {
-      processIncomingMotionSensorMessage(message)
-      if (lightGroups) {
-        debug.logAppStateIfNeeded(lightGroups)
-        web.sendAppStateIfNeeded(lightGroups)
-      }
-    } else if (isModel(ContactSensorMessage)(message)) {
-      processIncomingContactSensorMessage(message)
-      if (lightGroups) {
-        debug.logAppStateIfNeeded(lightGroups)
-        web.sendAppStateIfNeeded(lightGroups)
-      }
     } else if (isModel(PowerStateMessage)(message)) {
       processIncomingPowerStateMessage(message)
-      if (lightGroups) {
-        debug.logAppStateIfNeeded(lightGroups)
-        web.sendAppStateIfNeeded(lightGroups)
-      }
     } else {
-      assertExhausted(message)
+      // TODO: assertExhausted(message)
     }
+    web.sendAppStateIfNeeded(state)
   }
 
   async function processIncomingInitMessage(
@@ -95,186 +68,46 @@ export async function createStateMachine(
   ) {
     if (isModel(DevicesInitMessage)(message)) initDevices = message
     if (isModel(GroupsInitMessage)(message)) initGroups = message
-
-    // If both init messages have been received, set up initial state:
-    if (initDevices && initGroups) {
-      const devices = initDevices,
-        groups = initGroups
-      lightGroups = groups.body
-        .filter(group => group.members.length) // ignore empty groups (there are some built-in ones at least)
-        .map(group => ({
-          friendlyName: group.friendly_name,
-          members: devices.body
-            .filter(device =>
-              group.members
-                .map(m => m.ieee_address)
-                .includes(device.ieee_address),
-            )
-            .map(device => ({
-              ieeeAddress: device.ieee_address,
-              friendlyName: device.friendly_name,
-            })),
-        }))
-    }
   }
 
   async function processIncomingLightStateMessage(message: LightStateMessage) {
-    const [, friendlyName] = message.topic
-    lightGroups = lightGroups?.map(group => ({
-      ...group,
-      members: group.members.map(light =>
-        light.friendlyName === friendlyName
-          ? {
-              ...light,
-              latestReceivedState: {
-                state: message.body.state,
-                brightness: message.body.brightness ?? 0,
-                updated: new Date(),
-              },
-            }
-          : light,
-      ),
-    }))
-  }
-
-  async function processIncomingButtonPressMessage(
-    message: ButtonPressMessage,
-  ) {
-    const [, friendlyName] = message.topic
-    if (message.body.action === 'brightness_move_up') {
-      await setScene('Day')
-    } else if (message.body.action === 'on') {
-      switch (friendlyName) {
-        case 'button_night':
-          await setScene('Night')
-          break
-        case 'button_off':
-          await setScene('Off')
-          break
-        case 'button_tv':
-          await setScene('TV')
-          break
-      }
-    }
-  }
-
-  async function processIncomingMotionSensorMessage(
-    message: MotionSensorMessage,
-  ) {
-    // No actions right now
-  }
-
-  async function processIncomingContactSensorMessage(
-    message: ContactSensorMessage,
-  ) {
-    const [, friendlyName] = message.topic
-    if (friendlyName === 'siivouskaappi_ovi') {
-      command.setNewLightState(
-        'siivouskaappi_1',
-        message.body.contact ? 0 : 254,
-      )
+    const [, name] = message.topic
+    const device = getDeviceConfig(name)
+    if (device?.type !== 'Light') return
+    state = {
+      ...state,
+      [device.name]: {
+        brightness: message.body.state === 'ON' ? message.body.brightness : 0,
+        updated: new Date(),
+      },
     }
   }
 
   async function processIncomingPowerStateMessage(message: PowerStateMessage) {
-    const [, friendlyName] = message.topic
-    lightGroups = lightGroups?.map(group => ({
-      ...group,
-      members: group.members.map(light =>
-        light.friendlyName === friendlyName
-          ? {
-              ...light,
-              latestReceivedState: {
-                state: message.body.state,
-                brightness: message.body.state === 'ON' ? 254 : 0,
-                updated: new Date(),
-              },
-            }
-          : light,
-      ),
-    }))
-  }
-
-  async function queryMissingCurrentState() {
-    const missingCurrentState = lightGroups?.find(group =>
-      group.members.some(light => !light.latestReceivedState),
-    )
-    if (missingCurrentState) command.queryCurrentState(missingCurrentState)
-  }
-
-  async function setScene(name: string) {
-    if (!lightGroups) return // not init'd yet
-    const scene = scenes[name]
-    if (!scene) return
-    const groupNames: LightGroupName[] = Object.keys(scene) as any
-    for (let i = 0; i < 3; i++) {
-      for (const name of groupNames) {
-        await command.setNewLightStateIfNeeded(
-          name,
-          scene[name].brightness,
-          lightGroups,
-        )
-      }
+    const device = getDeviceConfig(message)
+    if (device?.type !== 'PowerPlug') return
+    state = {
+      ...state,
+      [device.name]: {
+        powerOn: message.body.state === 'ON',
+        updated: new Date(),
+      },
     }
   }
-}
 
-type LightGroupName =
-  | 'eteinen_group'
-  | 'keittiö_group'
-  | 'ruokapöytä_group'
-  | 'telkkari_group'
-  | 'työhuone_group'
-  | 'olkkari_group'
-  | 'pikkuvessa_group'
-  | 'kylppäri_group'
-
-type Scene = { [key in LightGroupName]: { brightness: number } }
-type Scenes = { [key: string]: Scene | undefined }
-
-const off = { brightness: 0 }
-const dim = { brightness: 30 }
-const full = { brightness: 254 }
-
-const scenes: Scenes = {
-  Off: {
-    eteinen_group: off,
-    keittiö_group: off,
-    ruokapöytä_group: off,
-    telkkari_group: off,
-    työhuone_group: off,
-    olkkari_group: off,
-    pikkuvessa_group: off,
-    kylppäri_group: off,
-  },
-  Day: {
-    eteinen_group: full,
-    keittiö_group: full,
-    ruokapöytä_group: full,
-    telkkari_group: off,
-    työhuone_group: full,
-    olkkari_group: full,
-    pikkuvessa_group: full,
-    kylppäri_group: full,
-  },
-  Night: {
-    eteinen_group: off,
-    keittiö_group: dim,
-    ruokapöytä_group: dim,
-    telkkari_group: off,
-    työhuone_group: dim,
-    olkkari_group: dim,
-    pikkuvessa_group: dim,
-    kylppäri_group: dim,
-  },
-  TV: {
-    eteinen_group: off,
-    keittiö_group: off,
-    ruokapöytä_group: dim,
-    telkkari_group: { brightness: 175 },
-    työhuone_group: off,
-    olkkari_group: dim,
-    pikkuvessa_group: dim,
-    kylppäri_group: dim,
-  },
+  function checkMissingState() {
+    const groups = initGroups?.body
+    if (!groups)
+      throw new Error('Init groups not available when checking missing state')
+    Object.values(config).forEach(device => {
+      if (!state[device.name]) {
+        const isGroup = !!groups.find(
+          group => group.friendly_name === device.name,
+        )
+        command.setOptions(isGroup ? 'group' : 'device', device.name, {
+          retain: true, // if a group/device is still missing its state, it's possible it's "retained" option is not set → try to fix it, so it'll work on next startup
+        })
+      }
+    })
+  }
 }

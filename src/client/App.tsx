@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import 'src/client/App.css'
 import { FloorPlan } from 'src/client/FloorPlan'
-import { LightGroups } from 'src/server/state'
 import { PORT } from 'src/shared/config'
+import { StateMap } from '../shared/utils/state'
 
 const url =
   process.env.NODE_ENV === 'production'
@@ -25,14 +25,15 @@ function useServerConnection() {
     ReturnType<typeof createRetryingWebSocket> | undefined
   >()
   const [connected, setConnected] = useState(false)
-  const [state, setState] = useState<LightGroups | undefined>()
+  const [state, setState] = useState<StateMap | undefined>()
 
   useEffect(() => {
     socket.current = createRetryingWebSocket(
       url,
-      data => {
-        console.log('Received data from server:', data)
-        setState(JSON.parse(data))
+      raw => {
+        const data = JSON.parse(raw)
+        console.log('Received data from server', { data })
+        setState(data)
       },
       setConnected,
     )

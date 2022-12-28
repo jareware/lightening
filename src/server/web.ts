@@ -3,21 +3,21 @@ import expressWs from 'express-ws'
 import _ from 'lodash'
 import path from 'path'
 import { CommandModule } from 'src/server/command'
-import { LightGroups } from 'src/server/state'
 import { PromiseOf } from 'src/server/types'
-import { PORT } from 'src/shared/config'
+import config, { PORT } from 'src/shared/config'
+import { DeviceName } from 'src/shared/utils/config'
+import { StateMap } from 'src/shared/utils/state'
 import { WebSocket } from 'ws'
 
 export type WebServer = PromiseOf<ReturnType<typeof createWebServer>>
 export async function createWebServer(command: CommandModule) {
-  let prevLightGroups: LightGroups
+  let prevState: StateMap
   let connectedSockets: Array<WebSocket> = []
 
   startExpressServer()
 
   // Return public API:
   return {
-    sendAppState,
     sendAppStateIfNeeded,
   }
 
@@ -42,18 +42,22 @@ export async function createWebServer(command: CommandModule) {
 
   function handleIncomingConnection(ws: WebSocket, _req: Request) {
     connectedSockets.push(ws)
-    if (prevLightGroups) {
-      ws.send(JSON.stringify(prevLightGroups)) // if we already have the latest state available, send it down immediately
+    if (prevState) {
+      ws.send(JSON.stringify(prevState)) // if we already have the latest state available, send it down immediately
     }
     ws.on('message', (msg: string) => {
-      console.log('Got message from socket:', msg)
       try {
         const parsed = JSON.parse(msg)
-        command.setNewLightStateIfNeeded(
-          parsed.device,
-          parsed.brightness,
-          prevLightGroups,
-        )
+        const device = config[parsed.device as DeviceName]
+        if (!device) {
+          console.log(`Got unknown device "${parsed.device}" from client`)
+        } else if (device.type === 'Light') {
+          command.setLightState(parsed.device, parsed.brightness)
+        } else if (device.type === 'PowerPlug') {
+          command.setPowerState(parsed.device, parsed.brightness > 0)
+        } else {
+          console.log(`Incompatible command for device "${device.name}"`)
+        }
       } catch (err) {
         console.log('Received malformed data from client')
       }
@@ -64,13 +68,13 @@ export async function createWebServer(command: CommandModule) {
     })
   }
 
-  function sendAppStateIfNeeded(lightGroups: LightGroups) {
-    if (_.isEqual(prevLightGroups, lightGroups)) return
-    sendAppState(lightGroups)
-    prevLightGroups = lightGroups
+  function sendAppStateIfNeeded(newState: StateMap) {
+    if (_.isEqual(prevState, newState)) return
+    sendAppState(newState)
+    prevState = newState
   }
 
-  function sendAppState(lightGroups: LightGroups) {
-    connectedSockets.forEach(ws => ws.send(JSON.stringify(lightGroups)))
+  function sendAppState(newState: StateMap) {
+    connectedSockets.forEach(ws => ws.send(JSON.stringify(newState)))
   }
 }
