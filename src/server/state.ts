@@ -119,7 +119,7 @@ export async function createStateMachine(
       },
     }
     if (!prevState) return // this is the init for this device → don't react to changes, as they're not real changes
-    if ('controls' in device) {
+    if ('controls' in device && device.controls) {
       device.controls.forEach(name => {
         const controlledDevice = getDeviceConfig(name)
         if (controlledDevice?.type === 'Light')

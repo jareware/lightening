@@ -1,10 +1,41 @@
 import _ from 'lodash'
+import { IconName } from 'src/client/Icon'
 
 export const PORT = 3001
 
+function Light(options: { zones?: [number, number][][]; debug?: boolean }) {
+  return {
+    ...options,
+    type: 'Light' as const,
+  }
+}
+
+function PowerPlug(options: {
+  zones?: [number, number][][]
+  location?: [number, number]
+  icon?: IconName
+  debug?: boolean
+}) {
+  return {
+    ...options,
+    type: 'PowerPlug' as const,
+  }
+}
+
+function DoorSensor(options: { controls?: string[]; debug?: boolean }) {
+  return {
+    ...options,
+    type: 'DoorSensor' as const,
+  }
+}
+
+export type Device =
+  | ReturnType<typeof Light>
+  | ReturnType<typeof PowerPlug>
+  | ReturnType<typeof DoorSensor>
+
 export default configuration({
-  työhuone_group: {
-    type: 'Light',
+  työhuone_group: Light({
     zones: [
       [
         [427, 365],
@@ -16,10 +47,9 @@ export default configuration({
         [427, 365],
       ],
     ],
-  },
+  }),
 
-  olkkari_group: {
-    type: 'Light',
+  olkkari_group: Light({
     zones: [
       [
         [722, 333],
@@ -30,10 +60,9 @@ export default configuration({
         [722, 333],
       ],
     ],
-  },
+  }),
 
-  ruokapöytä_group: {
-    type: 'Light',
+  ruokapöytä_group: Light({
     zones: [
       [
         [274, 27],
@@ -43,10 +72,9 @@ export default configuration({
         [274, 27],
       ],
     ],
-  },
+  }),
 
-  keittiö_group: {
-    type: 'Light',
+  keittiö_group: Light({
     zones: [
       [
         [382, 336],
@@ -56,10 +84,9 @@ export default configuration({
         [382, 336],
       ],
     ],
-  },
+  }),
 
-  tiskipöytä_group: {
-    type: 'Light',
+  tiskipöytä_group: Light({
     zones: [
       // Pitkä työtaso:
       [
@@ -78,10 +105,9 @@ export default configuration({
         [376, 336],
       ],
     ],
-  },
+  }),
 
-  eteinen_group: {
-    type: 'Light',
+  eteinen_group: Light({
     zones: [
       [
         [274, 585],
@@ -93,10 +119,9 @@ export default configuration({
         [274, 585],
       ],
     ],
-  },
+  }),
 
-  parveke_group: {
-    type: 'PowerPlug',
+  parveke_group: PowerPlug({
     zones: [
       [
         [725, 348],
@@ -105,10 +130,9 @@ export default configuration({
         [773, 594],
       ],
     ],
-  },
+  }),
 
-  pikkuvessa_group: {
-    type: 'Light',
+  pikkuvessa_group: Light({
     zones: [
       [
         [274, 685],
@@ -118,10 +142,9 @@ export default configuration({
         [274, 685],
       ],
     ],
-  },
+  }),
 
-  kylppäri_group: {
-    type: 'Light',
+  kylppäri_group: Light({
     zones: [
       [
         [32, 482],
@@ -135,10 +158,9 @@ export default configuration({
         [32, 482],
       ],
     ],
-  },
+  }),
 
-  siivouskaappi_1: {
-    type: 'Light',
+  siivouskaappi_1: Light({
     zones: [
       [
         [616, 621.5],
@@ -147,27 +169,22 @@ export default configuration({
         [510, 640],
       ],
     ],
-    debugZones: false,
-  },
+    debug: false,
+  }),
 
-  siivouskaappi_ovi: {
-    type: 'DoorSensor',
+  siivouskaappi_ovi: DoorSensor({
     controls: ['siivouskaappi_1'],
-  },
+  }),
+
+  emman_pulputin: PowerPlug({
+    location: [660, 670],
+    icon: 'Water Voc',
+  }),
 })
 
 function configuration<
   C extends {
-    [K in keyof C]:
-      | {
-          type: 'Light' | 'PowerPlug'
-          zones: [number, number][][]
-          debugZones?: boolean
-        }
-      | {
-          type: 'DoorSensor'
-          controls?: (keyof C)[]
-        }
+    [K in keyof C]: Device // TODO: controls?: (keyof C)[]
   },
 >(
   config: C,

@@ -1,5 +1,6 @@
 import React, { CSSProperties, Fragment } from 'react'
 import 'src/client/App.css'
+import { Icon } from 'src/client/Icon'
 import config from 'src/shared/config'
 import { Device } from 'src/shared/utils/config'
 import { StateMap } from '../shared/utils/state'
@@ -26,17 +27,23 @@ export function FloorPlan(props: {
         xmlns="http://www.w3.org/2000/svg"
         style={{ maxHeight: '80vh' }}
       >
-        {Object.values(config).map(
-          device =>
-            (device.type === 'Light' || device.type === 'PowerPlug') && (
-              <Zones
-                key={device.name}
-                device={device}
-                state={props.state}
-                send={props.send}
-              />
-            ),
-        )}
+        {Object.values(config).map(device => (
+          <Zones
+            key={device.name}
+            device={device}
+            state={props.state}
+            send={props.send}
+          />
+        ))}
+
+        {Object.values(config).map(device => (
+          <Widget
+            key={device.name}
+            device={device}
+            state={props.state}
+            send={props.send}
+          />
+        ))}
 
         <Wall
           note="parveke"
@@ -183,9 +190,9 @@ export function FloorPlan(props: {
         {Object.values(config).map(
           (device, i) =>
             'zones' in device &&
-            'debugZones' in device &&
-            device.debugZones &&
-            device.zones.map((zone, j) => (
+            'debug' in device &&
+            device.debug &&
+            device.zones?.map((zone, j) => (
               <Fragment key={String([i, j])}>
                 <path
                   d={toPath(zone)}
@@ -239,10 +246,11 @@ function Wall(props: {
 }
 
 function Zones(props: {
-  device: Extract<Device, { zones: unknown }>
+  device: Device
   state: StateMap
   send: (data: string) => void
 }) {
+  if (!('zones' in props.device) || !props.device.zones) return null
   const state = props.state[props.device.name]
   if (!state) return null
   const on = 'powerOn' in state ? state.powerOn : state.brightness > 0
@@ -269,6 +277,33 @@ function Zones(props: {
         />
       ))}
     </>
+  )
+}
+
+function Widget(props: {
+  device: Device
+  state: StateMap
+  send: (data: string) => void
+}) {
+  if (!('location' in props.device) || !props.device.location) return null
+  if (!('icon' in props.device) || !props.device.icon) return null
+  const state = props.state[props.device.name]
+  if (!state) return null
+  const on = state.powerOn
+  return (
+    <Icon
+      name={props.device.icon}
+      location={props.device.location}
+      on={on}
+      onClick={() =>
+        props.send(
+          JSON.stringify({
+            device: props.device.name,
+            brightness: on ? 0 : 254,
+          }),
+        )
+      }
+    />
   )
 }
 
