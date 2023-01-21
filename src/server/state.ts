@@ -15,7 +15,11 @@ import {
   PowerStateMessage,
 } from 'src/shared/types/messages'
 import { getDeviceConfig } from 'src/shared/utils/config'
-import { setDeviceState, StateMap } from 'src/shared/utils/state'
+import {
+  getDeviceState,
+  setDeviceState,
+  StateMap,
+} from 'src/shared/utils/state'
 
 export type LightGroups = Array<{
   friendlyName: string
@@ -42,17 +46,12 @@ export async function createStateMachine(
   let state: StateMap = {}
 
   setTimeout(checkMissingState, 5000)
+  setInterval(checkAutoTurnOff, 5000)
 
   // Return public API:
   return {
     processIncomingMessage,
     setScene: _.noop,
-  }
-
-  function getDeviceState(input: string | { topic: ['zigbee2mqtt', string] }) {
-    const device = getDeviceConfig(input)
-    if (!device) return null
-    return state[device.name]
   }
 
   async function processIncomingMessage(message: IncomingMessage) {
@@ -86,8 +85,14 @@ export async function createStateMachine(
     const [, name] = message.topic
     const device = getDeviceConfig(name)
     if (device?.type !== 'Light') return
+    const prevState = getDeviceState(state, device.name)
+    const brightness =
+      message.body.state === 'ON'
+        ? message.body.brightness || 1 // if light is "ON" at brightness 0, consider it 1
+        : 0
     state = setDeviceState(state, device.name, {
-      brightness: message.body.state === 'ON' ? message.body.brightness : 0,
+      brightness,
+      lastSetOnAt: brightness > 0 ? new Date() : prevState?.lastSetOnAt,
     })
   }
 
@@ -104,7 +109,7 @@ export async function createStateMachine(
   ) {
     const device = getDeviceConfig(message)
     if (device?.type !== 'DoorSensor') return
-    const prevState = getDeviceState(message)
+    const prevState = getDeviceState(state, device.name)
     const doorOpen = !message.body.contact
     state = setDeviceState(state, device.name, {
       doorOpen,
@@ -129,7 +134,7 @@ export async function createStateMachine(
   ) {
     const device = getDeviceConfig(message)
     if (device?.type !== 'MotionSensor') return
-    const prevState = getDeviceState(message)
+    const prevState = getDeviceState(state, device.name)
     const motionDetected = message.body.occupancy
     state = setDeviceState(state, device.name, {
       motionDetected,
@@ -164,6 +169,20 @@ export async function createStateMachine(
       command.setOptions(isGroup ? 'group' : 'device', device.name, {
         retain: true, // if a group/device is still missing its state, it's possible it's "retained" option is not set → try to fix it, so it'll work on next startup
       })
+    })
+  }
+
+  function checkAutoTurnOff() {
+    Object.values(config).forEach(device => {
+      if (!('turnOffAfterMinutes' in device) || !device.turnOffAfterMinutes)
+        return
+      const s = getDeviceState(state, device.name)
+      if (!s || !('lastSetOnAt' in s) || !s.lastSetOnAt) return
+      const { lastSetOnAt } = s
+      const { turnOffAfterMinutes } = device
+      if (lastSetOnAt.getTime() + turnOffAfterMinutes * 60 * 1000 > Date.now())
+        return
+      command.setLightState(device, 0)
     })
   }
 }

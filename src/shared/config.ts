@@ -7,6 +7,7 @@ function Light(options: {
   zones?: [number, number][][]
   location?: [number, number]
   icon?: IconName
+  turnOffAfterMinutes?: number
   debug?: boolean
 }) {
   return {

@@ -7,6 +7,7 @@ export type StateMap = {
     ? {
         brightness: number
         updated: Date
+        lastSetOnAt?: Date
       }
     : Config[K]['type'] extends 'PowerPlug'
     ? {
@@ -29,16 +30,16 @@ export type StateMap = {
 export function getDeviceState<T extends DeviceName>(
   state: StateMap,
   name: T,
-): StateMap[T] {
-  const ds = state[name]
-  if (!ds) throw new Error(`Getting state for unknown device "${name}"`)
-  return ds
+): StateMap[T] | undefined {
+  const device = getDeviceConfig(name)
+  if (!device) throw new Error(`Setting state for unknown device "${name}"`)
+  return state[name]
 }
 
 export function setDeviceState<T extends DeviceName>(
   state: StateMap,
   name: T,
-  newState: Partial<StateMap[T]>,
+  newState: Omit<NonNullable<StateMap[T]>, 'updated'>,
 ): StateMap {
   const device = getDeviceConfig(name)
   if (!device) throw new Error(`Setting state for unknown device "${name}"`)
