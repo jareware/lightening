@@ -198,6 +198,7 @@ export default configuration({
   kylppäri_yövalo: Light({
     location: [85, 535],
     icon: 'Fluorescent',
+    turnOffAfterMinutes: 5,
   }),
 
   siivouskaappi_ovi: DoorSensor({

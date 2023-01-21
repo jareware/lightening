@@ -86,13 +86,13 @@ export async function createStateMachine(
     const device = getDeviceConfig(name)
     if (device?.type !== 'Light') return
     const prevState = getDeviceState(state, device.name)
-    const brightness =
+    const newBrightness =
       message.body.state === 'ON'
         ? message.body.brightness || 1 // if light is "ON" at brightness 0, consider it 1
         : 0
     state = setDeviceState(state, device.name, {
-      brightness,
-      lastSetOnAt: brightness > 0 ? new Date() : prevState?.lastSetOnAt,
+      brightness: newBrightness,
+      lastSetOnAt: newBrightness > 0 ? new Date() : prevState?.lastSetOnAt,
     })
   }
 
@@ -116,13 +116,15 @@ export async function createStateMachine(
     })
     if (!prevState) return // this is the init for this device → don't react to changes, as they're not real changes
     if ('controls' in device && device.controls) {
+      const newBrightness = doorOpen ? device.controlsBrightness ?? 254 : 0
       device.controls.forEach(name => {
         const controlledDevice = getDeviceConfig(name)
-        if (controlledDevice?.type === 'Light')
-          command.setLightState(
-            controlledDevice,
-            doorOpen ? device.controlsBrightness ?? 254 : 0,
-          )
+        if (
+          controlledDevice?.type === 'Light' &&
+          !(controlledDevice.turnOffAfterMinutes && newBrightness === 0)
+        ) {
+          command.setLightState(controlledDevice, newBrightness)
+        }
         if (controlledDevice?.type === 'PowerPlug')
           command.setPowerState(controlledDevice, doorOpen)
       })
@@ -141,13 +143,17 @@ export async function createStateMachine(
     })
     if (!prevState) return // this is the init for this device → don't react to changes, as they're not real changes
     if ('controls' in device && device.controls) {
+      const newBrightness = motionDetected
+        ? device.controlsBrightness ?? 254
+        : 0
       device.controls.forEach(name => {
         const controlledDevice = getDeviceConfig(name)
-        if (controlledDevice?.type === 'Light')
-          command.setLightState(
-            controlledDevice,
-            motionDetected ? device.controlsBrightness ?? 254 : 0,
-          )
+        if (
+          controlledDevice?.type === 'Light' &&
+          !(controlledDevice.turnOffAfterMinutes && newBrightness === 0)
+        ) {
+          command.setLightState(controlledDevice, newBrightness)
+        }
         if (controlledDevice?.type === 'PowerPlug')
           command.setPowerState(controlledDevice, motionDetected)
       })
