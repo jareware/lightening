@@ -126,7 +126,10 @@ export async function createStateMachine(
       device.controls.forEach(name => {
         const controlledDevice = getDeviceConfig(name)
         if (controlledDevice?.type === 'Light')
-          command.setLightState(controlledDevice, doorOpen ? 254 : 0)
+          command.setLightState(
+            controlledDevice,
+            doorOpen ? device.controlsBrightness ?? 254 : 0,
+          )
         if (controlledDevice?.type === 'PowerPlug')
           command.setPowerState(controlledDevice, doorOpen)
       })
@@ -152,7 +155,10 @@ export async function createStateMachine(
       device.controls.forEach(name => {
         const controlledDevice = getDeviceConfig(name)
         if (controlledDevice?.type === 'Light')
-          command.setLightState(controlledDevice, motionDetected ? 2 : 0) // note that 1 is too low to turn on an IKEA LED driver
+          command.setLightState(
+            controlledDevice,
+            motionDetected ? device.controlsBrightness ?? 254 : 0,
+          )
         if (controlledDevice?.type === 'PowerPlug')
           command.setPowerState(controlledDevice, motionDetected)
       })

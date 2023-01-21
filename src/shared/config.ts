@@ -3,7 +3,12 @@ import { IconName } from 'src/client/Icon'
 
 export const PORT = 3001
 
-function Light(options: { zones?: [number, number][][]; debug?: boolean }) {
+function Light(options: {
+  zones?: [number, number][][]
+  location?: [number, number]
+  icon?: IconName
+  debug?: boolean
+}) {
   return {
     ...options,
     type: 'Light' as const,
@@ -22,14 +27,22 @@ function PowerPlug(options: {
   }
 }
 
-function DoorSensor(options: { controls?: string[]; debug?: boolean }) {
+function DoorSensor(options: {
+  controls?: string[]
+  controlsBrightness?: number
+  debug?: boolean
+}) {
   return {
     ...options,
     type: 'DoorSensor' as const,
   }
 }
 
-function MotionSensor(options: { controls?: string[]; debug?: boolean }) {
+function MotionSensor(options: {
+  controls?: string[]
+  controlsBrightness?: number
+  debug?: boolean
+}) {
   return {
     ...options,
     type: 'MotionSensor' as const,
@@ -177,11 +190,11 @@ export default configuration({
         [510, 640],
       ],
     ],
-    debug: false,
   }),
 
   kylppäri_yövalo: Light({
-    debug: false,
+    location: [85, 535],
+    icon: 'Fluorescent',
   }),
 
   siivouskaappi_ovi: DoorSensor({
@@ -190,6 +203,7 @@ export default configuration({
 
   vaatehuone_liike: MotionSensor({
     controls: ['kylppäri_yövalo'],
+    controlsBrightness: 2, // note that 1 is too low to turn on an IKEA LED driver
   }),
 
   emman_pulputin: PowerPlug({

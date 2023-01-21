@@ -36,15 +36,6 @@ export function FloorPlan(props: {
           />
         ))}
 
-        {Object.values(config).map(device => (
-          <Widget
-            key={device.name}
-            device={device}
-            state={props.state}
-            send={props.send}
-          />
-        ))}
-
         <Wall
           note="parveke"
           path={[
@@ -187,6 +178,15 @@ export function FloorPlan(props: {
           dash={[17, 55, 1000]}
         />
 
+        {Object.values(config).map(device => (
+          <Widget
+            key={device.name}
+            device={device}
+            state={props.state}
+            send={props.send}
+          />
+        ))}
+
         {Object.values(config).map(
           (device, i) =>
             'zones' in device &&
@@ -286,13 +286,12 @@ function Widget(props: {
   send: (data: string) => void
 }) {
   if (!('location' in props.device) || !props.device.location) return null
-  if (!('icon' in props.device) || !props.device.icon) return null
   const state = props.state[props.device.name]
   if (!state) return null
-  const on = state.powerOn
+  const on = 'powerOn' in state ? state.powerOn : state.brightness > 0
   return (
     <Icon
-      name={props.device.icon}
+      name={props.device.icon ?? 'Help'}
       location={props.device.location}
       on={on}
       onClick={() =>
