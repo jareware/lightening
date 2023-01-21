@@ -288,7 +288,14 @@ function Widget(props: {
   if (!('location' in props.device) || !props.device.location) return null
   const state = props.state[props.device.name]
   if (!state) return null
-  const on = 'powerOn' in state ? state.powerOn : state.brightness > 0
+  const on =
+    'powerOn' in state
+      ? state.powerOn
+      : 'brightness' in state
+      ? state.brightness > 0
+      : 'motionDetected' in state
+      ? state.motionDetected
+      : false
   return (
     <Icon
       name={props.device.icon ?? 'Help'}

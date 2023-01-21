@@ -41,6 +41,8 @@ function DoorSensor(options: {
 function MotionSensor(options: {
   controls?: string[]
   controlsBrightness?: number
+  location?: [number, number]
+  icon?: IconName
   debug?: boolean
 }) {
   return {
@@ -204,10 +206,17 @@ export default configuration({
   vaatehuone_liike: MotionSensor({
     controls: ['kylppäri_yövalo'],
     controlsBrightness: 2, // note that 1 is too low to turn on an IKEA LED driver
+    location: [178, 387],
+    icon: 'Sensors',
+  }),
+
+  eteinen_liike: MotionSensor({
+    location: [411, 637],
+    icon: 'Sensors',
   }),
 
   emman_pulputin: PowerPlug({
-    location: [660, 670],
+    location: [660, 669],
     icon: 'Water Voc',
   }),
 })
