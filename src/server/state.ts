@@ -188,6 +188,7 @@ export async function createStateMachine(
       const { turnOffAfterMinutes } = device
       if (lastSetOnAt.getTime() + turnOffAfterMinutes * 60 * 1000 > Date.now())
         return
+      if (!s.brightness) return
       command.setLightState(device, 0)
     })
   }
