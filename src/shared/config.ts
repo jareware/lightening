@@ -29,10 +29,18 @@ function DoorSensor(options: { controls?: string[]; debug?: boolean }) {
   }
 }
 
+function MotionSensor(options: { controls?: string[]; debug?: boolean }) {
+  return {
+    ...options,
+    type: 'MotionSensor' as const,
+  }
+}
+
 export type Device =
   | ReturnType<typeof Light>
   | ReturnType<typeof PowerPlug>
   | ReturnType<typeof DoorSensor>
+  | ReturnType<typeof MotionSensor>
 
 export default configuration({
   työhuone_group: Light({
@@ -172,8 +180,16 @@ export default configuration({
     debug: false,
   }),
 
+  kylppäri_yövalo: Light({
+    debug: false,
+  }),
+
   siivouskaappi_ovi: DoorSensor({
     controls: ['siivouskaappi_1'],
+  }),
+
+  vaatehuone_liike: MotionSensor({
+    controls: ['kylppäri_yövalo'],
   }),
 
   emman_pulputin: PowerPlug({

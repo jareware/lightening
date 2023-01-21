@@ -16,5 +16,10 @@ export type StateMap = {
         doorOpen: boolean
         updated: Date
       }
+    : Config[K]['type'] extends 'MotionSensor'
+    ? {
+        motionDetected: boolean
+        updated: Date
+      }
     : never
 }

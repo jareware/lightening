@@ -11,6 +11,7 @@ import {
   GroupsInitMessage,
   IncomingMessage,
   LightStateMessage,
+  MotionSensorMessage,
   PowerStateMessage,
 } from 'src/shared/types/messages'
 import { getDeviceConfig } from 'src/shared/utils/config'
@@ -66,6 +67,8 @@ export async function createStateMachine(
       processIncomingPowerStateMessage(message)
     } else if (isModel(ContactSensorMessage)(message)) {
       processIncomingContactSensorMessage(message)
+    } else if (isModel(MotionSensorMessage)(message)) {
+      processIncomingMotionSensorMessage(message)
     } else {
       // TODO: assertExhausted(message)
     }
@@ -114,7 +117,7 @@ export async function createStateMachine(
     state = {
       ...state,
       [device.name]: {
-        doorOpen: !message.body.contact,
+        doorOpen,
         updated: new Date(),
       },
     }
@@ -126,6 +129,32 @@ export async function createStateMachine(
           command.setLightState(controlledDevice, doorOpen ? 254 : 0)
         if (controlledDevice?.type === 'PowerPlug')
           command.setPowerState(controlledDevice, doorOpen)
+      })
+    }
+  }
+
+  async function processIncomingMotionSensorMessage(
+    message: MotionSensorMessage,
+  ) {
+    const device = getDeviceConfig(message)
+    if (device?.type !== 'MotionSensor') return
+    const prevState = getDeviceState(message)
+    const motionDetected = message.body.occupancy
+    state = {
+      ...state,
+      [device.name]: {
+        motionDetected,
+        updated: new Date(),
+      },
+    }
+    if (!prevState) return // this is the init for this device → don't react to changes, as they're not real changes
+    if ('controls' in device && device.controls) {
+      device.controls.forEach(name => {
+        const controlledDevice = getDeviceConfig(name)
+        if (controlledDevice?.type === 'Light')
+          command.setLightState(controlledDevice, motionDetected ? 2 : 0) // note that 1 is too low to turn on an IKEA LED driver
+        if (controlledDevice?.type === 'PowerPlug')
+          command.setPowerState(controlledDevice, motionDetected)
       })
     }
   }
