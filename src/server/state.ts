@@ -15,7 +15,7 @@ import {
   PowerStateMessage,
 } from 'src/shared/types/messages'
 import { getDeviceConfig } from 'src/shared/utils/config'
-import { StateMap } from 'src/shared/utils/state'
+import { setDeviceState, StateMap } from 'src/shared/utils/state'
 
 export type LightGroups = Array<{
   friendlyName: string
@@ -86,25 +86,17 @@ export async function createStateMachine(
     const [, name] = message.topic
     const device = getDeviceConfig(name)
     if (device?.type !== 'Light') return
-    state = {
-      ...state,
-      [device.name]: {
-        brightness: message.body.state === 'ON' ? message.body.brightness : 0,
-        updated: new Date(),
-      },
-    }
+    state = setDeviceState(state, device.name, {
+      brightness: message.body.state === 'ON' ? message.body.brightness : 0,
+    })
   }
 
   async function processIncomingPowerStateMessage(message: PowerStateMessage) {
     const device = getDeviceConfig(message)
     if (device?.type !== 'PowerPlug') return
-    state = {
-      ...state,
-      [device.name]: {
-        powerOn: message.body.state === 'ON',
-        updated: new Date(),
-      },
-    }
+    state = setDeviceState(state, device.name, {
+      powerOn: message.body.state === 'ON',
+    })
   }
 
   async function processIncomingContactSensorMessage(
@@ -114,13 +106,9 @@ export async function createStateMachine(
     if (device?.type !== 'DoorSensor') return
     const prevState = getDeviceState(message)
     const doorOpen = !message.body.contact
-    state = {
-      ...state,
-      [device.name]: {
-        doorOpen,
-        updated: new Date(),
-      },
-    }
+    state = setDeviceState(state, device.name, {
+      doorOpen,
+    })
     if (!prevState) return // this is the init for this device → don't react to changes, as they're not real changes
     if ('controls' in device && device.controls) {
       device.controls.forEach(name => {
@@ -143,13 +131,9 @@ export async function createStateMachine(
     if (device?.type !== 'MotionSensor') return
     const prevState = getDeviceState(message)
     const motionDetected = message.body.occupancy
-    state = {
-      ...state,
-      [device.name]: {
-        motionDetected,
-        updated: new Date(),
-      },
-    }
+    state = setDeviceState(state, device.name, {
+      motionDetected,
+    })
     if (!prevState) return // this is the init for this device → don't react to changes, as they're not real changes
     if ('controls' in device && device.controls) {
       device.controls.forEach(name => {
