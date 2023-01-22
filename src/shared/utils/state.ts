@@ -6,23 +6,23 @@ export type StateMap = {
   [K in DeviceName]?: Config[K]['type'] extends 'Light'
     ? {
         brightness: number
-        updated: Date
-        lastSetOnAt?: Date
+        updated: string // in ISO format
+        lastSetOnAt?: string // in ISO format
       }
     : Config[K]['type'] extends 'PowerPlug'
     ? {
         powerOn: boolean
-        updated: Date
+        updated: string // in ISO format
       }
     : Config[K]['type'] extends 'DoorSensor'
     ? {
         doorOpen: boolean
-        updated: Date
+        updated: string // in ISO format
       }
     : Config[K]['type'] extends 'MotionSensor'
     ? {
         motionDetected: boolean
-        updated: Date
+        updated: string // in ISO format
       }
     : never
 }
@@ -49,7 +49,7 @@ export function setDeviceState<T extends DeviceName>(
       ...state[name],
       ...newState,
       ..._.identity<Partial<StateMap[DeviceName]>>({
-        updated: new Date(),
+        updated: new Date().toISOString(),
       }),
     },
   }

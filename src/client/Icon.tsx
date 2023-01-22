@@ -7,6 +7,7 @@ export function Icon(props: {
   location: [x: number, y: number]
   on?: boolean
   onClick?: () => void
+  remaining?: number
 }) {
   const r = 35
   const scale = 1
@@ -29,6 +30,32 @@ export function Icon(props: {
       >
         {icons[props.name]}
       </g>
+      {props.remaining && (
+        <circle
+          cx={r}
+          cy={r}
+          r={r}
+          fill="transparent"
+          stroke="black"
+          strokeWidth={1}
+        />
+      )}
+      {typeof props.remaining === 'number' && (
+        <circle
+          cx={r}
+          cy={r}
+          r={r}
+          style={{
+            transition: `all 250ms linear`,
+          }}
+          fill="transparent"
+          stroke="black"
+          transform-origin={`${r} ${r}`}
+          transform={`rotate(270)`}
+          strokeDasharray={`0 ${2 * Math.PI * r * (1 - props.remaining)} 10000`}
+          strokeWidth={10}
+        />
+      )}
     </g>
   )
 }

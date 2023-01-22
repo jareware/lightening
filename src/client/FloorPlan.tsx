@@ -1,9 +1,9 @@
-import React, { CSSProperties, Fragment } from 'react'
+import React, { CSSProperties, Fragment, useEffect, useState } from 'react'
 import 'src/client/App.css'
 import { Icon } from 'src/client/Icon'
 import config from 'src/shared/config'
 import { Device } from 'src/shared/utils/config'
-import { StateMap } from '../shared/utils/state'
+import { getDeviceState, StateMap } from '../shared/utils/state'
 
 export function FloorPlan(props: {
   state: StateMap
@@ -285,6 +285,35 @@ function Widget(props: {
   state: StateMap
   send: (data: string) => void
 }) {
+  const [remaining, setRemaining] = useState(0)
+  useEffect(() => {
+    update()
+    const int = setInterval(update, 250)
+    return () => clearInterval(int)
+    function update() {
+      const state = getDeviceState(props.state, props.device.name)
+      if (
+        'turnOffAfterMinutes' in props.device &&
+        props.device.turnOffAfterMinutes &&
+        state &&
+        'lastSetOnAt' in state &&
+        state.lastSetOnAt &&
+        state.brightness
+      ) {
+        const { lastSetOnAt } = state
+        const { turnOffAfterMinutes } = props.device
+        const remainingMillis =
+          new Date(lastSetOnAt).getTime() +
+          turnOffAfterMinutes * 60 * 1000 -
+          Date.now()
+        setRemaining(
+          Math.max(0, remainingMillis / (turnOffAfterMinutes * 60 * 1000)),
+        )
+      } else {
+        setRemaining(0)
+      }
+    }
+  }, [props.device, props.state])
   if (!('location' in props.device) || !props.device.location) return null
   const state = props.state[props.device.name]
   if (!state) return null
@@ -301,6 +330,7 @@ function Widget(props: {
       name={props.device.icon ?? 'Help'}
       location={props.device.location}
       on={on}
+      remaining={remaining}
       onClick={() =>
         props.send(
           JSON.stringify({

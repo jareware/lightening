@@ -46,7 +46,7 @@ export async function createStateMachine(
   let state: StateMap = {}
 
   setTimeout(checkMissingState, 5000)
-  setInterval(checkAutoTurnOff, 5000)
+  setInterval(checkAutoTurnOff, 1000)
 
   // Return public API:
   return {
@@ -92,7 +92,8 @@ export async function createStateMachine(
         : 0
     state = setDeviceState(state, device.name, {
       brightness: newBrightness,
-      lastSetOnAt: newBrightness > 0 ? new Date() : prevState?.lastSetOnAt,
+      lastSetOnAt:
+        newBrightness > 0 ? new Date().toISOString() : prevState?.lastSetOnAt,
     })
   }
 
@@ -173,7 +174,7 @@ export async function createStateMachine(
         group => group.friendly_name === device.name,
       )
       command.setOptions(isGroup ? 'group' : 'device', device.name, {
-        retain: true, // if a group/device is still missing its state, it's possible it's "retained" option is not set → try to fix it, so it'll work on next startup
+        retain: true, // if a group/device is still missing its state, it's possible its "retained" option is not set → try to fix it, so it'll work on next startup
       })
     })
   }
@@ -186,7 +187,10 @@ export async function createStateMachine(
       if (!s || !('lastSetOnAt' in s) || !s.lastSetOnAt) return
       const { lastSetOnAt } = s
       const { turnOffAfterMinutes } = device
-      if (lastSetOnAt.getTime() + turnOffAfterMinutes * 60 * 1000 > Date.now())
+      if (
+        new Date(lastSetOnAt).getTime() + turnOffAfterMinutes * 60 * 1000 >
+        Date.now()
+      )
         return
       if (!s.brightness) return
       command.setLightState(device, 0)
