@@ -30,16 +30,6 @@ export function Icon(props: {
       >
         {icons[props.name]}
       </g>
-      {props.remaining && (
-        <circle
-          cx={r}
-          cy={r}
-          r={r}
-          fill="transparent"
-          stroke="black"
-          strokeWidth={1}
-        />
-      )}
       {typeof props.remaining === 'number' && (
         <circle
           cx={r}
