@@ -220,12 +220,12 @@ export default configuration({
   }),
 
   emman_pulputin: PowerPlug({
-    location: [660, 669],
+    location: [710, 660],
     icon: 'Water Voc',
   }),
 
   emman_ovi: DoorSensor({
-    location: [562,685],
+    location: [562, 685],
     icon: 'Door Sensor',
   }),
 })
