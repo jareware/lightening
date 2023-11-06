@@ -18,6 +18,7 @@ export type StateMap = {
     ? {
         doorOpen: boolean
         updated: string // in ISO format
+        lastChangedAt?: string // in ISO format
       }
     : Config[K]['type'] extends 'MotionSensor'
     ? {

@@ -12,13 +12,13 @@ import {
   IncomingMessage,
   LightStateMessage,
   MotionSensorMessage,
-  PowerStateMessage,
+  PowerStateMessage
 } from 'src/shared/types/messages'
 import { getDeviceConfig } from 'src/shared/utils/config'
 import {
   getDeviceState,
   setDeviceState,
-  StateMap,
+  StateMap
 } from 'src/shared/utils/state'
 
 export type LightGroups = Array<{
@@ -112,8 +112,10 @@ export async function createStateMachine(
     if (device?.type !== 'DoorSensor') return
     const prevState = getDeviceState(state, device.name)
     const doorOpen = !message.body.contact
+    const changed = _.isBoolean(prevState?.doorOpen) && prevState?.doorOpen !== doorOpen
     state = setDeviceState(state, device.name, {
       doorOpen,
+      lastChangedAt: changed ? new Date().toISOString() :prevState?.lastChangedAt
     })
     if (!prevState) return // this is the init for this device → don't react to changes, as they're not real changes
     if ('controls' in device && device.controls) {

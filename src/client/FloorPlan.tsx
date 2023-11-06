@@ -321,24 +321,39 @@ function Widget(props: {
     'powerOn' in state
       ? state.powerOn
       : 'brightness' in state
-      ? state.brightness > 0
-      : 'motionDetected' in state
-      ? state.motionDetected
-      : false
+        ? state.brightness > 0
+        : 'motionDetected' in state
+          ? state.motionDetected
+          : 'doorOpen' in state
+            ? state.doorOpen
+            : false
   return (
     <Icon
       name={props.device.icon ?? 'Help'}
       location={props.device.location}
       on={on}
       remaining={remaining}
-      onClick={() =>
-        props.send(
-          JSON.stringify({
-            device: props.device.name,
-            brightness: on ? 0 : 254,
-          }),
-        )
-      }
+      onClick={() => {
+        if (props.device.type === 'DoorSensor') {
+          if ('lastChangedAt' in state && state.lastChangedAt) {
+            alert(
+              `Door was last ${on ? 'opened' : 'closed'} ${new Date(
+                state.lastChangedAt,
+              ).toLocaleTimeString()}`,
+            )
+          } else {
+            alert(`Door hasn't updated since app start`)
+          }
+        } else {
+          // Assume it's light-like
+          props.send(
+            JSON.stringify({
+              device: props.device.name,
+              brightness: on ? 0 : 254,
+            }),
+          )
+        }
+      }}
     />
   )
 }

@@ -31,6 +31,8 @@ function PowerPlug(options: {
 function DoorSensor(options: {
   controls?: string[]
   controlsBrightness?: number
+  location?: [number, number]
+  icon?: IconName
   debug?: boolean
 }) {
   return {
@@ -220,6 +222,11 @@ export default configuration({
   emman_pulputin: PowerPlug({
     location: [660, 669],
     icon: 'Water Voc',
+  }),
+
+  emman_ovi: DoorSensor({
+    location: [562,685],
+    icon: 'Door Sensor',
   }),
 })
 
