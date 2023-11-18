@@ -6,7 +6,7 @@ import { StateMap } from '../shared/utils/state'
 
 const url =
   process.env.NODE_ENV === 'production'
-    ? `${location.protocol.replace('http', 'ws')}://${location.hostname}:${location.port}/` // in prod, connect to whatever port the UI was served from
+    ? `${location.protocol.replace('http', 'ws')}//${location.hostname}:${location.port}/` // in prod, connect to whatever port the UI was served from
     : `ws://${location.hostname}:${PORT}/` // in development, we can't connect through the CRA proxy, so connect directly to server process
 
 function App() {
