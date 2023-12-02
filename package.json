@@ -31,7 +31,7 @@
     "fp-ts": "2.11.4",
     "io-ts": "2.2.16",
     "lodash": "4.17.21",
-    "nodemon": "2.0.13",
+    "nodemon": "2.0.20",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "^5.0.1",
