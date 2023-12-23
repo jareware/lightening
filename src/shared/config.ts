@@ -219,9 +219,9 @@ export default configuration({
     icon: 'Sensors',
   }),
 
-  emman_pulputin: PowerPlug({
+  emman_joulukuusi: PowerPlug({
     location: [710, 660],
-    icon: 'Water Voc',
+    icon: 'Park',
   }),
 
   emman_ovi: DoorSensor({
