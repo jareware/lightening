@@ -147,7 +147,7 @@ export default configuration({
     ],
   }),
 
-  parveke_group: PowerPlug({
+  parveke: PowerPlug({
     zones: [
       [
         [725, 348],
@@ -186,7 +186,7 @@ export default configuration({
     ],
   }),
 
-  siivouskaappi_1: Light({
+  siivouskaappi: Light({
     zones: [
       [
         [616, 621.5],
@@ -203,28 +203,28 @@ export default configuration({
     turnOffAfterMinutes: 5,
   }),
 
-  siivouskaappi_ovi: DoorSensor({
-    controls: ['siivouskaappi_1'],
+  siivouskaappi_door: DoorSensor({
+    controls: ['siivouskaappi'],
   }),
 
-  vaatehuone_liike: MotionSensor({
+  vaatehuone_motion: MotionSensor({
     controls: ['kylppäri_yövalo'],
     controlsBrightness: 2, // note that 1 is too low to turn on an IKEA LED driver
     location: [178, 387],
     icon: 'Sensors',
   }),
 
-  eteinen_liike: MotionSensor({
+  eteinen_motion: MotionSensor({
     location: [411, 637],
     icon: 'Sensors',
   }),
 
-  emman_joulukuusi: PowerPlug({
+  legopuu: PowerPlug({
     location: [330, 100],
     icon: 'Park',
   }),
 
-  emman_ovi: DoorSensor({
+  emma_door: DoorSensor({
     location: [562, 685],
     icon: 'Door Sensor',
   }),
