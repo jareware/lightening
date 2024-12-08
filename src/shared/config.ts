@@ -220,7 +220,7 @@ export default configuration({
   }),
 
   emma_joulukuusi: PowerPlug({
-    location: [642, 670],
+    location: [730, 655],
     icon: 'Park',
   }),
 
