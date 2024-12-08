@@ -215,18 +215,23 @@ export default configuration({
   }),
 
   eteinen_motion: MotionSensor({
-    location: [411, 637],
+    location: [330, 637],
     icon: 'Sensors',
   }),
 
-  legopuu: PowerPlug({
-    location: [330, 100],
+  emma_joulukuusi: PowerPlug({
+    location: [642, 670],
     icon: 'Park',
   }),
 
   emma_door: DoorSensor({
     location: [562, 685],
     icon: 'Door Sensor',
+  }),
+
+  eteinen_joulukuusi: PowerPlug({
+    location: [411, 637],
+    icon: 'Park',
   }),
 })
 
