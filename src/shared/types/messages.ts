@@ -58,6 +58,28 @@ export const ButtonPressMessage = t.type(
     topic: t.tuple([t.literal('zigbee2mqtt'), t.string]),
     body: t.type({
       action: t.union([
+        // Regular wall switches send these:
+        t.literal('arrow_left_click'),
+        t.literal('arrow_left_hold'),
+        t.literal('arrow_left_release'),
+        t.literal('arrow_right_click'),
+        t.literal('arrow_right_hold'),
+        t.literal('arrow_right_release'),
+        t.literal('brightness_down_click'),
+        t.literal('brightness_down_hold'),
+        t.literal('brightness_down_release'),
+        t.literal('brightness_up_click'),
+        t.literal('brightness_up_hold'),
+        t.literal('brightness_up_release'),
+        t.literal('toggle'),
+        t.literal('toggle_hold'),
+        // Square I/O buttons send these:
+        t.literal('on'), // Quick press
+        t.literal('off'), // Quick press
+        t.literal('brightness_move_up'), // Long press start
+        t.literal('brightness_move_down'), // Long press start
+        t.literal('brightness_stop'), // Long press end
+        // Scene buttons send these:
         t.literal('on'), // Button fast press
         t.literal('brightness_move_up'), // Button long press started
         t.literal('brightness_stop'), // Button long press finished

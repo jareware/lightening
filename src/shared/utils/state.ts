@@ -25,7 +25,11 @@ export type StateMap = {
         motionDetected: boolean
         updated: string // in ISO format
       }
-    : never
+      : Config[K]['type'] extends 'Button'
+      ? {
+          updated: string // in ISO format
+        }
+      : never
 }
 
 export function getDeviceState<T extends DeviceName>(

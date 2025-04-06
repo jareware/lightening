@@ -54,11 +54,25 @@ function MotionSensor(options: {
   }
 }
 
+function Button(options: {
+  controls?: string[]
+  controlsBrightness?: number
+  location?: [number, number]
+  icon?: IconName
+  debug?: boolean
+}) {
+  return {
+    ...options,
+    type: 'Button' as const,
+  }
+}
+
 export type Device =
   | ReturnType<typeof Light>
   | ReturnType<typeof PowerPlug>
   | ReturnType<typeof DoorSensor>
   | ReturnType<typeof MotionSensor>
+  | ReturnType<typeof Button>
 
 export default configuration({
   työhuone_group: Light({
@@ -219,20 +233,30 @@ export default configuration({
     icon: 'Sensors',
   }),
 
-  emma_joulukuusi: PowerPlug({
-    location: [730, 655],
-    icon: 'Park',
-  }),
-
   emma_door: DoorSensor({
     location: [562, 685],
     icon: 'Door Sensor',
   }),
 
-  eteinen_joulukuusi: PowerPlug({
-    location: [411, 637],
-    icon: 'Park',
+  työhuone_jarnon_näyttö: Light({
+    location: [600, 400],
+    icon: 'Fluorescent',
   }),
+
+  työhuone_jarnon_näyttö_remote: Button({
+    controls: ['työhuone_jarnon_näyttö'],
+    controlsBrightness: 255,
+  })
+
+  // emma_joulukuusi: PowerPlug({
+  //   location: [730, 655],
+  //   icon: 'Park',
+  // }),
+
+  // eteinen_joulukuusi: PowerPlug({
+  //   location: [411, 637],
+  //   icon: 'Park',
+  // }),
 })
 
 function configuration<

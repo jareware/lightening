@@ -6,6 +6,7 @@ import { isModel } from 'src/server/utils'
 import { WebServer } from 'src/server/web'
 import config from 'src/shared/config'
 import {
+  ButtonPressMessage,
   ContactSensorMessage,
   DevicesInitMessage,
   GroupsInitMessage,
@@ -68,6 +69,8 @@ export async function createStateMachine(
       processIncomingContactSensorMessage(message)
     } else if (isModel(MotionSensorMessage)(message)) {
       processIncomingMotionSensorMessage(message)
+    } else if (isModel(ButtonPressMessage)(message)) {
+      processIncomingButtonPressMessage(message)
     } else {
       // TODO: assertExhausted(message)
     }
@@ -159,6 +162,31 @@ export async function createStateMachine(
         }
         if (controlledDevice?.type === 'PowerPlug')
           command.setPowerState(controlledDevice, motionDetected)
+      })
+    }
+  }
+
+  async function processIncomingButtonPressMessage(
+    message: ButtonPressMessage,
+  ) {
+    const device = getDeviceConfig(message)
+    if (device?.type !== 'Button') return
+    const prevState = getDeviceState(state, device.name)
+    const turnOn = message.body.action === 'on'
+    state = setDeviceState(state, device.name, {})
+    if (!prevState) return // this is the init for this device → don't react to changes, as they're not real changes
+    if ('controls' in device && device.controls) {
+      const newBrightness = turnOn ? device.controlsBrightness ?? 254 : 0
+      device.controls.forEach(name => {
+        const controlledDevice = getDeviceConfig(name)
+        if (
+          controlledDevice?.type === 'Light' &&
+          !(controlledDevice.turnOffAfterMinutes && newBrightness === 0)
+        ) {
+          command.setLightState(controlledDevice, newBrightness)
+        }
+        if (controlledDevice?.type === 'PowerPlug')
+          command.setPowerState(controlledDevice, turnOn)
       })
     }
   }
