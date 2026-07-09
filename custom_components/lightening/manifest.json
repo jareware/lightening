@@ -1,10 +1,14 @@
 {
   "domain": "lightening",
   "name": "Lightening",
-  "version": "0.1.0",
-  "codeowners": ["@jareware"],
+  "version": "0.0.1",
+  "codeowners": [
+    "@jareware"
+  ],
   "documentation": "https://github.com/jareware/lightening",
   "issue_tracker": "https://github.com/jareware/lightening/issues",
-  "dependencies": ["frontend"],
+  "dependencies": [
+    "frontend"
+  ],
   "config_flow": true
 }
