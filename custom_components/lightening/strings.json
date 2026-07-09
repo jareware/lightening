@@ -1,0 +1,10 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Lightening",
+        "description": "Set up the Lightening floor plan panel."
+      }
+    }
+  }
+}

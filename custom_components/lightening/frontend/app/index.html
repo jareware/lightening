@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lightening</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 24px;
+      background: #1c1c1c;
+      color: #e1e1e1;
+    }
+    h1 { font-size: 16px; color: #888; margin-bottom: 16px; font-weight: 400; }
+    .entity-card {
+      background: #2c2c2c;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 300px;
+    }
+    .entity-name { font-size: 13px; color: #999; margin-bottom: 4px; }
+    .entity-state { font-size: 28px; font-weight: 600; margin-bottom: 16px; }
+    .entity-state.on { color: #ffd54f; }
+    .entity-state.off { color: #666; }
+    .actions { display: flex; gap: 8px; }
+    button {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.15s;
+    }
+    button:disabled { opacity: 0.4; cursor: default; }
+    .btn-toggle { background: #3b3b3b; color: #e1e1e1; }
+    .btn-toggle:hover:not(:disabled) { background: #4a4a4a; }
+    .btn-info { background: transparent; color: #7caeff; border: 1px solid rgba(124,174,255,0.4); }
+    .btn-info:hover:not(:disabled) { background: rgba(124,174,255,0.08); }
+    #status { font-size: 11px; color: #555; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Lightening PoC</h1>
+  <div class="entity-card">
+    <div class="entity-name" id="entity-name">light.tyohuoneen_kattovalo</div>
+    <div class="entity-state off" id="state">&mdash;</div>
+    <div class="actions">
+      <button class="btn-toggle" id="toggle" disabled>Toggle</button>
+      <button class="btn-info" id="more-info" disabled>More Info</button>
+    </div>
+  </div>
+  <div id="status">Waiting for auth from parent&hellip;</div>
+
+  <script>
+    var ENTITY_ID = 'light.tyohuoneen_kattovalo';
+
+    var ws = null;
+    var msgId = 1;
+    var latestToken = null;
+    var parentOrigin = null;
+
+    var stateEl = document.getElementById('state');
+    var entityNameEl = document.getElementById('entity-name');
+    var toggleBtn = document.getElementById('toggle');
+    var moreInfoBtn = document.getElementById('more-info');
+    var statusEl = document.getElementById('status');
+
+    // --- Auth bridge ---
+
+    window.addEventListener('message', function (event) {
+      if (!event.data || event.data.type !== 'auth') return;
+
+      // Trust the first auth sender as our parent
+      if (!parentOrigin) {
+        parentOrigin = event.origin;
+      }
+      if (event.origin !== parentOrigin) return;
+
+      latestToken = event.data.token;
+
+      // Connect if we don't have an active connection
+      if (!ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+        connectWS();
+      }
+    });
+
+    // --- WebSocket ---
+
+    function connectWS() {
+      if (!latestToken || !parentOrigin) return;
+
+      statusEl.textContent = 'Connecting…';
+
+      // Derive WS URL from parent origin (HA frontend)
+      var wsUrl = parentOrigin.replace(/^http/, 'ws') + '/api/websocket';
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = function () {
+        statusEl.textContent = 'Authenticating…';
+      };
+
+      ws.onmessage = function (event) {
+        handleMessage(JSON.parse(event.data));
+      };
+
+      ws.onclose = function () {
+        statusEl.textContent = 'Disconnected. Waiting for reconnect…';
+        toggleBtn.disabled = true;
+      };
+
+      ws.onerror = function () {
+        statusEl.textContent = 'Connection error.';
+      };
+    }
+
+    function handleMessage(msg) {
+      console.log('handleMessage()', msg);
+      switch (msg.type) {
+        case 'auth_required':
+          ws.send(JSON.stringify({ type: 'auth', access_token: latestToken }));
+          break;
+
+        case 'auth_ok':
+          statusEl.textContent = 'Subscribing…';
+          // Get initial states
+          ws.send(JSON.stringify({ id: msgId++, type: 'get_states' }));
+          // Subscribe to state changes
+          ws.send(JSON.stringify({ id: msgId++, type: 'subscribe_events', event_type: 'state_changed' }));
+          toggleBtn.disabled = false;
+          moreInfoBtn.disabled = false;
+          break;
+
+        case 'auth_invalid':
+          statusEl.textContent = 'Auth rejected: ' + msg.message;
+          break;
+
+        case 'result':
+          if (msg.success && Array.isArray(msg.result)) {
+            // Response to get_states
+            var entity = msg.result.find(function (e) { return e.entity_id === ENTITY_ID; });
+            if (entity) updateEntity(entity);
+          }
+          break;
+
+        case 'event':
+          if (msg.event && msg.event.event_type === 'state_changed') {
+            var data = msg.event.data;
+            if (data.entity_id === ENTITY_ID && data.new_state) {
+              updateEntity(data.new_state);
+            }
+          }
+          break;
+      }
+    }
+
+    function updateEntity(entity) {
+      var state = entity.state;
+      stateEl.textContent = state === 'on' ? 'ON' : state === 'off' ? 'OFF' : state;
+      stateEl.className = 'entity-state ' + (state === 'on' ? 'on' : 'off');
+
+      // Show friendly name if available
+      if (entity.attributes && entity.attributes.friendly_name) {
+        entityNameEl.textContent = entity.attributes.friendly_name;
+      }
+
+      statusEl.textContent = 'Connected';
+    }
+
+    // --- Actions ---
+
+    toggleBtn.addEventListener('click', function () {
+      if (!ws || ws.readyState !== WebSocket.OPEN) return;
+      ws.send(JSON.stringify({
+        id: msgId++,
+        type: 'call_service',
+        domain: 'light',
+        service: 'toggle',
+        target: { entity_id: ENTITY_ID },
+      }));
+    });
+
+    moreInfoBtn.addEventListener('click', function () {
+      if (!parentOrigin) return;
+      window.parent.postMessage(
+        { type: 'more-info', entity_id: ENTITY_ID },
+        parentOrigin
+      );
+    });
+  </script>
+</body>
+</html>
