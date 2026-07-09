@@ -5,16 +5,15 @@ from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, VERSION
 
-PANEL_URL = "/lightening"
+STATIC_URL = "/lightening-assets"
 PANEL_FRONTEND_PATH = "custom_components/lightening/frontend"
-PANEL_APP_PATH = "custom_components/lightening/frontend/app"
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     frontend_path = hass.config.path(PANEL_FRONTEND_PATH)
 
     await hass.http.async_register_static_paths(
-        [StaticPathConfig(PANEL_URL, frontend_path, cache_headers=False)]
+        [StaticPathConfig(STATIC_URL, frontend_path, cache_headers=False)]
     )
 
     async_register_built_in_panel(
@@ -27,7 +26,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         config={
             "_panel_custom": {
                 "name": "lightening-panel",
-                "js_url": f"{PANEL_URL}/lightening-panel.js?v={VERSION}",
+                "js_url": f"{STATIC_URL}/lightening-panel.js?v={VERSION}",
                 "trust_external_script": True,
             },
         },

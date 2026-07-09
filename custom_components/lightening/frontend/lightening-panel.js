@@ -26,7 +26,7 @@ class LighteningPanel extends HTMLElement {
     // Support ?dev=http://localhost:5173 for local development
     var params = new URLSearchParams(window.location.search);
     var devUrl = params.get('dev');
-    var iframeUrl = devUrl || '/lightening/app/';
+    var iframeUrl = devUrl || '/lightening-assets/app/index.html';
 
     this._iframeOrigin = new URL(iframeUrl, window.location.origin).origin;
 
