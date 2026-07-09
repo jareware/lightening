@@ -6,7 +6,6 @@ on:
 
 jobs:
   release:
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -17,19 +16,21 @@ jobs:
         id: version
         run: echo "version=0.0.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
-      - name: Update version in source files
+      - name: Patch version into source files
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           jq --arg v "$VERSION" '.version = $v' custom_components/lightening/manifest.json > tmp && mv tmp custom_components/lightening/manifest.json
           sed -i "s/VERSION = .*/VERSION = \"$VERSION\"/" custom_components/lightening/const.py
 
-      - name: Commit and tag
+      - name: Create tagged release commit (not on master)
         run: |
+          VERSION="${{ steps.version.outputs.version }}"
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add -A
-          git commit -m "v${{ steps.version.outputs.version }} [skip ci]"
-          git push
+          git commit -m "v$VERSION"
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
 
       - name: Create release
         uses: softprops/action-gh-release@v2
