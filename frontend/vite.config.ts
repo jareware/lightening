@@ -22,9 +22,11 @@ const GLUE_FILE = path.resolve(
   '../custom_components/lightening/frontend/lightening-panel.js',
 )
 
-// Serve the working-copy glue instead of whatever HA has deployed, so editing
-// it is a page refresh rather than a release. Must be registered before the
-// proxy -- configureServer middleware runs ahead of internal middlewares.
+/**
+ * Serve the working-copy glue instead of whatever HA has deployed, so editing
+ * it is a page refresh rather than a release. Must be registered before the
+ * proxy -- configureServer middleware runs ahead of internal middlewares.
+ */
 function serveLocalGlue(): Plugin {
   return {
     name: 'lightening:serve-local-glue',
