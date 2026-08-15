@@ -1,10 +1,13 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { defineConfig, type Plugin } from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Where to find the Home Assistant instance we develop against.
-const HA_TARGET = process.env.HA_TARGET ?? 'http://koti-raspi:8123'
+// The Home Assistant instance to develop against. Set HA_TARGET in the
+// environment, or put it in a (gitignored) frontend/.env.local:
+//
+//   HA_TARGET=http://my-ha-host:8123
+const DEFAULT_HA_TARGET = 'http://homeassistant.local:8123'
 
 // In dev, the dev server owns this prefix and proxies everything else to HA.
 // That makes the iframe same-origin with the HA frontend hosting it, so the app
@@ -36,34 +39,40 @@ function serveLocalGlue(): Plugin {
   }
 }
 
-export default defineConfig(({ command }) => ({
-  plugins: [react(), serveLocalGlue()],
+export default defineConfig(({ command, mode }) => {
+  // '' prefix: read every var, not just VITE_-prefixed ones. Covers both
+  // .env files and the actual environment.
+  const haTarget = loadEnv(mode, __dirname, '').HA_TARGET || DEFAULT_HA_TARGET
 
-  // Dev: served under DEV_BASE alongside the proxied HA.
-  // Build: relative, because HA serves it from /lightening-assets/app/.
-  base: command === 'serve' ? DEV_BASE : './',
+  return {
+    plugins: [react(), serveLocalGlue()],
 
-  build: {
-    outDir: '../custom_components/lightening/frontend/app',
-    emptyOutDir: true,
-  },
+    // Dev: served under DEV_BASE alongside the proxied HA.
+    // Build: relative, because HA serves it from /lightening-assets/app/.
+    base: command === 'serve' ? DEV_BASE : './',
 
-  server: {
-    proxy: {
-      // Matched first: HA's WebSocket needs a real upgrade.
-      '/api/websocket': {
-        target: HA_TARGET,
-        ws: true,
-        // Don't add X-Forwarded-* -- HA rejects those from untrusted proxies.
-        xfwd: false,
-      },
-      // Everything outside DEV_BASE belongs to HA. ws:false so Vite keeps its
-      // own HMR socket instead of forwarding it upstream.
-      [`^(?!${DEV_BASE})`]: {
-        target: HA_TARGET,
-        ws: false,
-        xfwd: false,
+    build: {
+      outDir: '../custom_components/lightening/frontend/app',
+      emptyOutDir: true,
+    },
+
+    server: {
+      proxy: {
+        // Matched first: HA's WebSocket needs a real upgrade.
+        '/api/websocket': {
+          target: haTarget,
+          ws: true,
+          // Don't add X-Forwarded-* -- HA rejects those from untrusted proxies.
+          xfwd: false,
+        },
+        // Everything outside DEV_BASE belongs to HA. ws:false so Vite keeps its
+        // own HMR socket instead of forwarding it upstream.
+        [`^(?!${DEV_BASE})`]: {
+          target: haTarget,
+          ws: false,
+          xfwd: false,
+        },
       },
     },
-  },
-}))
+  }
+})
