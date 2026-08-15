@@ -41,9 +41,16 @@ only *changed* state objects get new identities, per-entity `===` remains a
 valid memo key.
 
 Two things cross the boundary in the other direction, both as direct calls
-rather than messages: `panelEl.showMoreInfo(entityId)`, which lets the glue
-build the `hass-more-info` event in HA's own realm, and `hass.callService(...)`,
-called straight through.
+rather than messages. Service calls go straight through `hass.callService(...)`.
+Anything HA exposes only as a DOM event — opening a more-info dialog, for
+instance, has no equivalent on the `hass` object — goes through
+`panelEl.fireEvent(type, detail)`, which mirrors [HA's own `fireEvent`
+helper][fire-event]. The app *could* dispatch on the glue element itself, but
+the event object would then belong to the iframe's realm rather than HA's;
+building it in the glue avoids that. Event names live in `useHass`, so
+components never spell one out.
+
+[fire-event]: https://github.com/home-assistant/frontend/blob/dev/src/common/dom/fire_event.ts
 
 [hass-data]: https://developers.home-assistant.io/docs/frontend/data/
 

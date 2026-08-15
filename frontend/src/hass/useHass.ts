@@ -1,19 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
 
-// Access to Home Assistant from inside the panel iframe.
-//
-// HA sets a `hass` property on our <lightening-panel> element -- see
-// https://developers.home-assistant.io/docs/frontend/custom-ui/creating-custom-panels/
-// Because the iframe is same-origin with the HA frontend (in production it's
-// served by HA; in dev the Vite proxy puts both on localhost:5173), we can just
-// read that property. We hold no connection of our own, so there is nothing to
-// reconnect after the browser suspends us.
-//
-// HA replaces `hass` on every change rather than mutating it -- "whenever a
-// state changes, a new version of the objects that changed are created"
-// (https://developers.home-assistant.io/docs/frontend/data/) -- so we must
-// re-read it each time instead of caching. The glue calls onHassChanged() as a
-// payload-free doorbell to tell us when.
+/**
+ * Access to Home Assistant from inside the panel iframe.
+ *
+ * HA sets a `hass` property on our <lightening-panel> element -- see
+ * https://developers.home-assistant.io/docs/frontend/custom-ui/creating-custom-panels/
+ * Because the iframe is same-origin with the HA frontend (in production it's
+ * served by HA; in dev the Vite proxy puts both on one origin), we can just
+ * read that property. We hold no connection of our own, so there is nothing to
+ * reconnect after the browser suspends us.
+ *
+ * HA replaces `hass` on every change rather than mutating it -- "whenever a
+ * state changes, a new version of the objects that changed are created"
+ * (https://developers.home-assistant.io/docs/frontend/data/) -- so we must
+ * re-read it each time instead of caching. The glue calls onHassChanged() as a
+ * payload-free doorbell to tell us when.
+ */
 
 export interface HassEntity {
   entity_id: string;
@@ -35,11 +37,20 @@ interface HassObject {
   ) => Promise<unknown>;
 }
 
+/** Events HA's frontend listens for. Extend as we need more of them. */
+interface HassDomEvents {
+  'hass-more-info': { entityId: string };
+}
+
 /** The <lightening-panel> element, plus the hooks the glue exposes on it. */
 interface PanelElement extends HTMLElement {
   hass?: HassObject;
   onHassChanged?: (() => void) | null;
-  showMoreInfo?: (entityId: string) => void;
+  fireEvent?: <T extends keyof HassDomEvents>(
+    type: T,
+    detail: HassDomEvents[T],
+    options?: { bubbles?: boolean; cancelable?: boolean; composed?: boolean },
+  ) => void;
 }
 
 export interface Hass {
@@ -76,6 +87,11 @@ const panelEl = getPanelElement();
 
 const NO_STATES: Record<string, HassEntity> = {};
 
+/**
+ * Live view of Home Assistant, re-rendering whenever HA hands the glue a new
+ * `hass` object. Returns an unavailable-but-inert value when the panel element
+ * can't be reached, so callers can render a message rather than crash.
+ */
 export function useHass(): Hass {
   const [hass, setHass] = useState<HassObject | null>(() => panelEl?.hass ?? null);
 
@@ -94,7 +110,8 @@ export function useHass(): Hass {
 
   const moreInfo = useCallback<Hass['moreInfo']>((entityId) => {
     // Delegated to the glue so the CustomEvent is built in HA's own realm.
-    panelEl?.showMoreInfo?.(entityId);
+    // Event names stay here rather than in components.
+    panelEl?.fireEvent?.('hass-more-info', { entityId });
   }, []);
 
   const fetchApi = useCallback<Hass['fetchApi']>((path, init) => {
