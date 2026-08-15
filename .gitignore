@@ -1,0 +1,9 @@
+node_modules/
+
+# Built by `npm run build` in frontend/, and by CI into each release tag.
+# Kept out of master so the source of truth stays in frontend/src.
+custom_components/lightening/frontend/app/
+
+# Runtime state: uploaded floorplans etc. Preserved across HACS updates via
+# the persistent_directory setting in hacs.json.
+custom_components/lightening/uploads/

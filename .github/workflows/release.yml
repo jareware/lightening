@@ -12,6 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
       - name: Generate version
         id: version
         run: echo "version=0.0.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
@@ -22,12 +28,21 @@ jobs:
           jq --arg v "$VERSION" '.version = $v' custom_components/lightening/manifest.json > tmp && mv tmp custom_components/lightening/manifest.json
           sed -i "s/VERSION = .*/VERSION = \"$VERSION\"/" custom_components/lightening/const.py
 
+      # The built app is gitignored on master -- it only exists inside release
+      # tags, so HACS users get it without master carrying build artifacts.
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
       - name: Create tagged release commit (not on master)
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add -A
+          git add -f custom_components/lightening/frontend/app
           git commit -m "v$VERSION"
           git tag "v$VERSION"
           git push origin "v$VERSION"
