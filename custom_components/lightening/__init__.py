@@ -8,8 +8,9 @@ from homeassistant.components.frontend import (
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.loader import async_get_integration
 
-from .const import DOMAIN, VERSION
+from .const import DOMAIN
 from .store import FloorplanStore
 from .api import LighteningUploadView, LighteningFloorplanView
 
@@ -34,6 +35,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.http.register_view(LighteningUploadView)
     hass.http.register_view(LighteningFloorplanView)
 
+    # Straight from manifest.json, so there's no second copy to drift. Used only
+    # to bust the browser cache on the glue when a new version is installed.
+    integration = await async_get_integration(hass, DOMAIN)
+
     async_register_built_in_panel(
         hass,
         component_name="custom",
@@ -44,7 +49,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         config={
             "_panel_custom": {
                 "name": "lightening-panel",
-                "js_url": f"{STATIC_URL}/lightening-panel.js?v={VERSION}",
+                "js_url": f"{STATIC_URL}/lightening-panel.js?v={integration.version}",
                 "trust_external_script": True,
             },
         },

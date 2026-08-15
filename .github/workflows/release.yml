@@ -22,11 +22,13 @@ jobs:
         id: version
         run: echo "version=0.0.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
-      - name: Patch version into source files
+      # manifest.json is the only place a version lives; the integration reads
+      # it back at runtime via async_get_integration.
+      - name: Patch version into manifest
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          jq --arg v "$VERSION" '.version = $v' custom_components/lightening/manifest.json > tmp && mv tmp custom_components/lightening/manifest.json
-          sed -i "s/VERSION = .*/VERSION = \"$VERSION\"/" custom_components/lightening/const.py
+          jq --arg v "${{ steps.version.outputs.version }}" '.version = $v' \
+            custom_components/lightening/manifest.json > tmp \
+            && mv tmp custom_components/lightening/manifest.json
 
       # The built app is gitignored on master -- it only exists inside release
       # tags, so HACS users get it without master carrying build artifacts.
