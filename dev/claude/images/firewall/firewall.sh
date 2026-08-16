@@ -41,14 +41,15 @@ HA_PORT="${HA_PORT:-8123}"
 # github/npm are here because without them the container cannot bootstrap
 # itself: bin/claude clones on first run, and the frontend needs `npm ci`.
 #
+# The docs hosts earn their place: checking Home Assistant's own source and docs
+# is how several wrong API calls were caught in this project (a view attribute
+# that does nothing, two accessors removed or renamed in later HA versions).
+# raw.githubusercontent.com is how HA's source gets read directly.
+#
 # Deliberately absent: both Datadog telemetry intakes and any org-managed OTEL
 # collector. Managed settings sit at the top of Claude Code's precedence chain
 # and can be delivered server-side, so an env var is a request while a firewall
 # rule is a fact.
-#
-# Also absent, and you will notice: documentation hosts. Fetching docs is how
-# several Home Assistant API mistakes were caught in this project, so expect
-# WebFetch to fail here and switch to EGRESS=any when that matters.
 ALLOWED_DOMAINS="
 api.anthropic.com
 statsig.anthropic.com
@@ -56,7 +57,10 @@ platform.claude.com
 downloads.claude.ai
 github.com
 codeload.github.com
+raw.githubusercontent.com
 registry.npmjs.org
+developers.home-assistant.io
+www.home-assistant.io
 "
 
 SET4=allowed4

@@ -136,6 +136,7 @@ Set by `EGRESS` in `.env`. The default denies everything outbound except:
 |---|---|
 | `api.anthropic.com`, `statsig.anthropic.com`, `platform.claude.com`, `downloads.claude.ai` | inference, feature flags, token refresh, auto-update |
 | `github.com`, `codeload.github.com`, `registry.npmjs.org` | without these the container can't clone itself or `npm ci` |
+| `developers.home-assistant.io`, `www.home-assistant.io`, `raw.githubusercontent.com` | checking HA's docs and source is how several wrong API calls were caught here |
 | One Home Assistant host, port 8123 | the Vite dev server proxies to it |
 
 Everything else — the rest of the internet, the rest of the LAN, and the host
@@ -171,10 +172,11 @@ Two honest limitations:
   reachable. In practice `code.claude.com` and `platform.claude.com` both sit
   behind the same address as `api.anthropic.com`, so allowing the API allows
   those too. Convenient here, but don't mistake it for precision.
-- **Documentation hosts are otherwise unreachable.** `developers.home-assistant.io`
-  and `raw.githubusercontent.com` are blocked, and doc lookups caught several
-  Home Assistant API mistakes in this project. Switch to `EGRESS=any` when that
-  matters.
+- **Only the listed documentation hosts work.** Home Assistant's docs and source
+  are allowed because this project needs them constantly; anything else a
+  WebFetch reaches for will fail. Switch to `EGRESS=any` when that matters, or
+  add the host to `ALLOWED_DOMAINS` in `images/firewall/firewall.sh` if it turns
+  out to be a recurring need.
 
 Alpine's dnsmasq is built with `ipset` but `no-nftset`, which is why this is
 ipset + iptables rather than nftables.
