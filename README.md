@@ -78,6 +78,13 @@ the working copy, making glue edits a page refresh rather than a release.
 `npm run build` writes into `custom_components/lightening/frontend/app/`, which
 is what a release ships.
 
+### In a container
+
+`bin/claude` drops you into a firewalled dev container with Claude Code, Node
+and the toolchain, holding no host credentials and unable to reach your LAN or
+host machine. Work and commits happen in there; `bin/push` publishes from the
+host. See [dev/claude/README.md](dev/claude/README.md).
+
 ## Releases
 
 Every push to `master` triggers CI, which stamps the version into

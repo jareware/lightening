@@ -9,11 +9,14 @@
 #     force-recreated. We do that here, before handing over a shell.
 #
 # Usage:
-#   ./claude                 # interactive login shell in the container
-#   ./claude claude          # go straight into Claude Code
-#   ./claude npm run dev     # run one command
+#   bin/claude                 # interactive login shell in the container
+#   bin/claude claude          # go straight into Claude Code
+#   bin/claude npm run dev     # run one command
+#
+# Publishing what you do in there is bin/push -- deliberately a separate,
+# host-side command, so no GitHub credential ever enters the container.
 set -euo pipefail
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/../dev/claude"
 
 if [ ! -f .env ]; then
   echo "dev/claude/.env is missing -- copy .env.example to .env and fill it in." >&2

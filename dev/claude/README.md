@@ -7,21 +7,20 @@ there, the dev server runs in there, and nothing from the host filesystem is
 mounted.
 
 ```
+bin/claude                 launcher -- the supported way in
+bin/push                   publish the container's work, from the host
 dev/claude/
   docker-compose.yml       the containers and their networking
   images/claude/           Node 22, Python, the usual CLI tools, Claude Code
   images/firewall/         the egress firewall applied to the dev container
-  claude                   launcher -- the supported way in
   .env.example             template for the untracked .env
 ```
 
 ## Running it
 
 ```bash
-cd dev/claude
-cp .env.example .env      # then fill it in -- see the file for each key
-docker compose up -d --build
-./claude                  # a shell in the container
+cp dev/claude/.env.example dev/claude/.env   # then fill it in -- see the file
+bin/claude                                   # builds if needed, then a shell
 ```
 
 The token in `.env` comes from `claude setup-token`, run on a machine that is
@@ -35,8 +34,8 @@ git clone https://github.com/jareware/lightening.git
 cd lightening/frontend && npm ci
 ```
 
-`./claude` also takes a command: `./claude claude` goes straight into Claude
-Code, `./claude npm run dev` runs one thing.
+`bin/claude` also takes a command: `bin/claude claude` goes straight into Claude
+Code, `bin/claude npm run dev` runs one thing.
 
 Two hazards, both inherited from how compose handles a shared network namespace:
 
@@ -46,21 +45,61 @@ Two hazards, both inherited from how compose handles a shared network namespace:
 
 > Compose does **not** reattach the firewall when the `claude` container gets a
 > fresh netns, so a bare restart leaves it unfirewalled until the sidecar is
-> force-recreated. `./claude` does that every time; if you drive compose by
+> force-recreated. `bin/claude` does that every time; if you drive compose by
 > hand, run `docker compose up -d --force-recreate claude-firewall` after any
 > recreate of `claude`.
+
+## Publishing: `bin/push`
+
+Commits happen in the container; **pushing happens on the host.**
+
+```bash
+bin/push              # fetch the container's master, push it to origin
+bin/push --dry-run    # everything except the actual ref update
+```
+
+The container holds no GitHub credential, so the agent cannot push. Instead the
+host reaches into it with git's `ext::` transport, running `git upload-pack`
+over `docker exec`: the container only ever *serves* commits, and this host's
+git does the pushing with this host's credential and config.
+
+That arrangement is the point, and it's stronger than it may look. Two designs
+that seem equivalent are not:
+
+- **A push sidecar sharing the volume** would run `git push` inside a working
+  copy the agent controls — so `.git/hooks/pre-push` and repo-local
+  `credential.helper` would execute under the credential's identity. Defensible
+  with `-c core.hooksPath=` and friends, but only by enumerating dangerous
+  knobs.
+- **`docker exec`-ing a push into the dev container** with the token in its
+  environment is worse still: the agent runs as the same uid, so it can simply
+  read `/proc/<pid>/environ`, or shadow `git` on `PATH`. No git hardening helps,
+  because git isn't the attack path.
+
+Fetching *out* avoids the category. No process holding a credential ever
+consults anything the agent wrote.
+
+`bin/push` uses a plain `git push`, deliberately: it refuses non-fast-forwards
+and carries no tags, so history can't be rewritten and no release can be cut by
+accident. It prints the commits first, and fast-forwards the host clone
+afterwards when that's clean.
+
+Residual risk: a hostile `upload-pack` is talking to your host's git. That is a
+far narrower surface than a credential living in a namespace the agent shares.
 
 ## The two checkouts
 
 The compose file lives in the repository, but the working checkout lives inside
 the container. So there are two clones and they are not the same one:
 
-- **on the host**, a clone used only to launch this thing
+- **on the host**, the clone that launches the container and publishes its work
 - **in the container**, the one you actually work in
 
-Changes the agent makes to `dev/claude/*` land in the container's clone and
-reach GitHub when pushed. The host clone then needs a `git pull` to pick up a
-changed launcher or compose file. Nothing keeps them in sync automatically.
+Changes the agent makes to `bin/*` or `dev/claude/*` land in the container's
+clone and reach GitHub via `bin/push`. The host clone catches up either from
+`bin/push`'s own fast-forward or with `git merge --ff-only container/master`.
+Nothing keeps them in sync automatically, so a launcher change needs that step
+before it takes effect on the host.
 
 Uncommitted work lives in the `home` volume, so it survives the container being
 stopped, rebuilt or recreated — but not the volume being deleted.

@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# Publish the dev container's work to GitHub -- run on the HOST, never inside
+# the container.
+#
+# The container only ever *serves* commits: git's ext:: transport runs
+# `git upload-pack` in there over `docker exec`, and this host's git does the
+# pushing with this host's credential and this host's config. So no GitHub
+# token is present in the container, and no git process handling a token ever
+# consults the agent-controlled .git/config or .git/hooks in there.
+#
+# That is the whole reason this is a separate host-side command rather than
+# something the agent can invoke. See dev/claude/README.md.
+#
+# Usage:
+#   bin/push              # fetch from the container and push to origin
+#   bin/push --dry-run    # everything except the actual ref update
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+BRANCH="${BRANCH:-master}"
+CONTAINER_REPO="${CONTAINER_REPO:-/home/dev/lightening}"
+
+dry_run=no
+case "${1:-}" in
+  --dry-run|-n) dry_run=yes ;;
+  "") ;;
+  *) echo "usage: bin/push [--dry-run]" >&2; exit 2 ;;
+esac
+
+cid="$(cd dev/claude && docker compose ps -q claude 2>/dev/null || true)"
+if [ -z "$cid" ]; then
+  echo "The dev container isn't running. Start it with bin/claude." >&2
+  exit 1
+fi
+
+if ! docker exec "$cid" test -d "$CONTAINER_REPO/.git"; then
+  echo "No git repository at $CONTAINER_REPO in the container." >&2
+  echo "Clone it in there first, or set CONTAINER_REPO." >&2
+  exit 1
+fi
+
+# ext:: is off by default for URLs that arrive from a remote; this one is built
+# here, so allowing it for this invocation only is safe.
+ext_remote="ext::docker exec -i $cid git upload-pack $CONTAINER_REPO"
+
+echo "Fetching $BRANCH from the container..."
+git -c protocol.ext.allow=user fetch --no-tags "$ext_remote" \
+  "refs/heads/$BRANCH:refs/remotes/container/$BRANCH"
+
+git fetch --quiet origin "$BRANCH"
+
+target="refs/remotes/container/$BRANCH"
+if git merge-base --is-ancestor "$target" "origin/$BRANCH"; then
+  echo "Nothing to push -- origin/$BRANCH already has it."
+  exit 0
+fi
+
+echo
+echo "About to push to origin/$BRANCH:"
+git --no-pager log --oneline --reverse "origin/$BRANCH..$target"
+echo
+
+# A plain push, deliberately: it refuses non-fast-forwards and carries no tags,
+# so history can't be rewritten and no release can be cut by accident.
+if [ "$dry_run" = yes ]; then
+  git push --dry-run origin "$target:refs/heads/$BRANCH"
+  echo "(dry run -- nothing was pushed)"
+  exit 0
+fi
+
+git push origin "$target:refs/heads/$BRANCH"
+
+# Keep this host clone useful (it holds bin/ and dev/claude/) without disturbing
+# a dirty working tree -- best effort only.
+if [ -z "$(git status --porcelain)" ] && [ "$(git rev-parse --abbrev-ref HEAD)" = "$BRANCH" ]; then
+  git merge --ff-only "$target" >/dev/null 2>&1 \
+    && echo "Host clone fast-forwarded to $BRANCH." \
+    || true
+else
+  echo "Host clone left alone; catch up with: git merge --ff-only container/$BRANCH"
+fi

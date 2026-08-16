@@ -45,7 +45,12 @@ function, convert it rather than matching the surrounding style.
   anywhere — the integration reads it back at runtime with
   `async_get_integration(hass, DOMAIN).version`.
 - **`HA_TARGET` must not name a specific instance.** It lives in a gitignored
-  `frontend/.env.local`; the checked-in default is `homeassistant.local:8123`.
-  Keep hostnames of real instances out of the repo.
-- **Don't push without being asked.** A push to `master` cuts a release and
-  propagates to HACS installs.
+  env file (`frontend/.env.local`, or `dev/claude/.env` when using the dev
+  container); the checked-in default is `homeassistant.local:8123`. Keep
+  hostnames of real instances out of the repo.
+- **Commit freely; you cannot push.** Publishing is `bin/push`, a host-side
+  command — the dev container deliberately holds no GitHub credential, so the
+  host fetches commits out of it rather than the container pushing them. Leave
+  work committed on `master` and say it's ready. A push cuts a release and
+  propagates to HACS installs, so it's the human's call anyway. See
+  `dev/claude/README.md` for why it's built this way.
