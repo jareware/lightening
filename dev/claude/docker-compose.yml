@@ -1,0 +1,67 @@
+# Stable project name so container/network/volume names don't depend on the
+# directory this is invoked from. Run from dev/claude/: `docker compose up -d --build`.
+name: lightening-dev
+
+# NOTHING from the host filesystem is mounted here, and no host environment is
+# passed through. That is the entire security model, so it is worth stating what
+# is deliberately absent:
+#
+#   - no ~/.ssh, ~/.aws, ~/.config/gh or ~/.gitconfig
+#   - no bind mount of the repository (it is cloned inside the container)
+#   - no `env_file` pointing outside this directory
+#
+# `${VAR}` below interpolates from dev/claude/.env at parse time; that does NOT
+# put VAR inside the container. Only keys listed under `environment:` get in.
+# Adding a convenience mount here undoes the isolation -- don't.
+
+services:
+  claude:
+    build: ./images/claude
+    # Keepalive as the main process so this container is a stable netns host for
+    # the firewall, independent of whether anyone is using a shell in it.
+    entrypoint: ["tail", "-f", "/dev/null"]
+    init: true # forward SIGTERM to tail so the container stops instantly
+    environment:
+      # From `claude setup-token` on an already-signed-in machine. This token is
+      # readable by the agent from its own environment -- unavoidable, since it
+      # has to authenticate. Scope and rotate accordingly.
+      CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN:?run `claude setup-token` and set it in dev/claude/.env}
+      # Commit identity for work done in here; git reads these directly.
+      GIT_AUTHOR_NAME: ${GIT_AUTHOR_NAME:?set in dev/claude/.env}
+      GIT_AUTHOR_EMAIL: ${GIT_AUTHOR_EMAIL:?set in dev/claude/.env}
+      GIT_COMMITTER_NAME: ${GIT_AUTHOR_NAME}
+      GIT_COMMITTER_EMAIL: ${GIT_AUTHOR_EMAIL}
+      # Read by frontend/vite.config.ts. A hostname, resolved via extra_hosts
+      # below -- the IP itself is not passed into this container.
+      HA_TARGET: ${HA_TARGET:?set in dev/claude/.env}
+    ports:
+      # 127.0.0.1 only: the Vite dev server is for this machine's browser, not
+      # the LAN. Keep the mapping 1:1 or Vite's HMR socket needs clientPort set.
+      - "127.0.0.1:5173:5173"
+    extra_hosts:
+      # So HA_TARGET's hostname resolves in here without LAN DNS.
+      - "${HA_HOSTNAME:?set in dev/claude/.env}:${HA_HOST_IP:?set in dev/claude/.env}"
+    volumes:
+      # The whole home directory, so the working copy, Claude Code and its
+      # history, and the shell's state all survive the container being recreated.
+      - home:/home/dev
+
+  # Egress firewall applied to the dev container's network namespace: public
+  # internet and one Home Assistant host:port, nothing else private.
+  # See images/firewall/firewall.sh for the policy.
+  claude-firewall:
+    build: ./images/firewall
+    network_mode: "service:claude" # share the netns, so OUTPUT rules govern `claude`
+    init: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    environment:
+      HA_HOST_IP: ${HA_HOST_IP:?set in dev/claude/.env}
+      HA_PORT: ${HA_PORT:-8123}
+    depends_on:
+      - claude
+    restart: unless-stopped
+
+volumes:
+  home:

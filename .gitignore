@@ -7,3 +7,7 @@ custom_components/lightening/frontend/app/
 # Runtime state: uploaded floorplans etc. Preserved across HACS updates via
 # the persistent_directory setting in hacs.json.
 custom_components/lightening/uploads/
+
+# Holds a Claude Code token and the address of a real Home Assistant instance.
+# dev/claude/.env.example is the committed template.
+dev/claude/.env

@@ -59,6 +59,11 @@ export default defineConfig(({ command, mode }) => {
     },
 
     server: {
+      // Bind all interfaces, not just localhost: in the dev container (see
+      // dev/claude/) a localhost-bound server is unreachable even with the port
+      // published. Running on a laptop directly, this also exposes the dev
+      // server to the LAN.
+      host: true,
       proxy: {
         // Matched first: HA's WebSocket needs a real upgrade.
         '/api/websocket': {

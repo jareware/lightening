@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Get a shell (or run a command) in the firewalled dev container.
+#
+# Why a wrapper rather than plain compose:
+#  1. `docker compose run claude` would spawn a NEW container that the firewall
+#     sidecar is not attached to -- i.e. unfirewalled. Never use it.
+#  2. Compose does not reattach the firewall when `claude` gets a fresh netns,
+#     so a bare restart leaves the container unfirewalled until the sidecar is
+#     force-recreated. We do that here, before handing over a shell.
+#
+# Usage:
+#   ./claude                 # interactive login shell in the container
+#   ./claude claude          # go straight into Claude Code
+#   ./claude npm run dev     # run one command
+set -euo pipefail
+cd "$(dirname "$0")"
+
+if [ ! -f .env ]; then
+  echo "dev/claude/.env is missing -- copy .env.example to .env and fill it in." >&2
+  exit 1
+fi
+
+docker compose up -d                                   # ensure the stack is running
+docker compose up -d --force-recreate claude-firewall  # (re)attach the firewall to the current netns
+
+if [ $# -eq 0 ]; then
+  exec docker compose exec -it claude bash -l
+else
+  exec docker compose exec -it claude "$@"
+fi
