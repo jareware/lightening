@@ -2,10 +2,15 @@
 
 Guidance for Claude Code (claude.ai/code) working in this repository.
 
-See `README.md` for the architecture — how the panel, the glue and the iframed
-app fit together, and why the app reads `hass` off the panel element rather than
-holding a connection of its own. Read it before changing anything in
-`custom_components/lightening/frontend/` or `frontend/src/hass/`.
+`README.md` is the overview: architecture, layout, dev commands, releases.
+
+**`docs/implementation.md` is the one to read before changing anything
+structural.** It carries the reasoning the code can't — why the app reads `hass`
+off the panel element instead of holding a connection, why development runs
+through a proxy, why config is an opaque document, and a list of Home Assistant
+APIs that were used wrongly here and how they failed. Several decisions look
+arbitrary without it. Keep it current when you make a decision worth
+remembering; it's written for whoever picks this up next.
 
 ## Comment style
 
