@@ -13,9 +13,8 @@
 #   bin/claude bash -l         # a shell instead
 #   bin/claude npm run dev     # run one command
 #
-# Permission prompts are off by default: the container is the sandbox, and it
-# holds no host credentials, no GitHub credential, and no route to the LAN or
-# host. Publishing is bin/push, which runs on the host for that reason.
+# Publishing is bin/push, which runs on the host -- the container holds no
+# GitHub credential, so the agent can't push from in here.
 set -euo pipefail
 cd "$(dirname "$0")/../dev/claude"
 
@@ -39,7 +38,7 @@ if ! docker compose exec -T claude test -d "$REPO_DIR/.git"; then
 fi
 
 if [ $# -eq 0 ]; then
-  exec docker compose exec -it -w "$REPO_DIR" claude claude --dangerously-skip-permissions
+  exec docker compose exec -it -w "$REPO_DIR" claude claude
 else
   exec docker compose exec -it -w "$REPO_DIR" claude "$@"
 fi

@@ -25,9 +25,12 @@ bin/claude                                   # that's it
 
 `bin/claude` builds the images if they've changed, starts the stack, reattaches
 the firewall, clones the repository on first run, and drops you into a Claude
-Code session in the checkout. Permission prompts are off: the container is the
-sandbox, and it holds no host credentials, no GitHub credential, and no route to
-the LAN or your host.
+Code session in the checkout.
+
+The container is a sandbox rather than a permission model, so
+`--dangerously-skip-permissions` is a reasonable thing to add if you want it —
+there are no host credentials, no GitHub credential and no route to the LAN or
+your host to lose. The launcher doesn't pass it; auto mode is the default.
 
 The token in `.env` comes from `claude setup-token`, run on a machine that is
 already signed in. Inside the container, `claude` picks it up from the
