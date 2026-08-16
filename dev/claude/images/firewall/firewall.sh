@@ -3,9 +3,13 @@ set -eu
 
 # Egress firewall for the dev container.
 #
-# Runs with `network_mode: service:claude`, so it shares that container's network
-# namespace and these OUTPUT rules govern *its* outbound traffic. The dev
-# container has no NET_ADMIN, so it cannot alter them.
+# This container owns the network namespace and the dev container joins it
+# (`network_mode: service:net`), so these OUTPUT rules govern the dev
+# container's outbound traffic. It has no NET_ADMIN, so it cannot alter them.
+#
+# Ownership is this way round on purpose: recreating the dev container rejoins a
+# namespace that still has these rules. Were it the owner, every rebuild would
+# hand it a fresh, empty, default-ACCEPT namespace instead.
 #
 # Policy:
 #   ALLOW  the public internet          (Anthropic API, npm, GitHub, docs)
@@ -23,7 +27,7 @@ set -eu
 HA_HOST_IP="${HA_HOST_IP:?set HA_HOST_IP in dev/claude/.env}"
 HA_PORT="${HA_PORT:-8123}"
 
-echo "claude-firewall: permitting Home Assistant at ${HA_HOST_IP}:${HA_PORT}"
+echo "firewall: permitting Home Assistant at ${HA_HOST_IP}:${HA_PORT}"
 
 ### IPv4 -- the LAN, the host and Home Assistant are all IPv4.
 iptables -F OUTPUT
@@ -50,12 +54,12 @@ ip6tables -A OUTPUT -d fc00::/7 -j REJECT                                   # UL
 ip6tables -A OUTPUT -d fe80::/10 -j REJECT                                  # link-local
 ip6tables -A OUTPUT -j ACCEPT                                               # public IPv6 internet
 
-echo "claude-firewall: rules applied -----------------------------------"
+echo "firewall: rules applied -----------------------------------"
 iptables -S OUTPUT
 ip6tables -S OUTPUT
 echo "------------------------------------------------------------------"
 
-# Stay alive so the rules persist for the dev container's lifetime. If that
-# container is recreated it gets a fresh netns and these rules go with the old
-# one -- see the note about reattaching in README.md.
+# Stay alive: this container owns the namespace the dev container is using, so
+# it must outlive it. Recreating *this* container is the one operation that
+# requires recreating the dev container too.
 exec tail -f /dev/null

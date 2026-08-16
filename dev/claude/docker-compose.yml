@@ -8,6 +8,7 @@ name: lightening-dev
 #
 #   - no ~/.ssh, ~/.aws, ~/.config/gh or ~/.gitconfig
 #   - no bind mount of the repository (it is cloned inside the container)
+#   - no GitHub credential of any kind (publishing is bin/push, on the host)
 #   - no `env_file` pointing outside this directory
 #
 # `${VAR}` below interpolates from dev/claude/.env at parse time; that does NOT
@@ -15,10 +16,40 @@ name: lightening-dev
 # Adding a convenience mount here undoes the isolation -- don't.
 
 services:
+  # Owns the network namespace, and firewalls it. The dev container joins this
+  # namespace rather than the other way round, so recreating the dev container
+  # -- a rebuild, a changed Dockerfile -- rejoins a namespace that still has the
+  # rules in it. With the ownership the other way, every rebuild silently
+  # produced a fresh, empty, default-ACCEPT namespace.
+  #
+  # Consequence: a container joining a namespace may not declare `ports` or
+  # `extra_hosts` (Docker rejects both), so they live here. /etc/hosts is
+  # bind-mounted into the joiner, so extra_hosts still reaches the dev container.
+  net:
+    build: ./images/firewall
+    init: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    environment:
+      HA_HOST_IP: ${HA_HOST_IP:?set in dev/claude/.env}
+      HA_PORT: ${HA_PORT:-8123}
+    ports:
+      # 127.0.0.1 only: the Vite dev server is for this machine's browser, not
+      # the LAN. Keep the mapping 1:1 or Vite's HMR socket needs clientPort set.
+      - "127.0.0.1:5173:5173"
+    extra_hosts:
+      # So HA_TARGET's hostname resolves in the dev container.
+      - "${HA_HOSTNAME:?set in dev/claude/.env}:${HA_HOST_IP:?set in dev/claude/.env}"
+
   claude:
     build: ./images/claude
-    # Keepalive as the main process so this container is a stable netns host for
-    # the firewall, independent of whether anyone is using a shell in it.
+    # Joins net's namespace. This container has no NET_ADMIN, so it cannot alter
+    # the rules governing it.
+    network_mode: "service:net"
+    depends_on:
+      - net
+    # Keepalive as the main process, so the container outlives any one session.
     entrypoint: ["tail", "-f", "/dev/null"]
     init: true # forward SIGTERM to tail so the container stops instantly
     environment:
@@ -31,37 +62,13 @@ services:
       GIT_AUTHOR_EMAIL: ${GIT_AUTHOR_EMAIL:?set in dev/claude/.env}
       GIT_COMMITTER_NAME: ${GIT_AUTHOR_NAME}
       GIT_COMMITTER_EMAIL: ${GIT_AUTHOR_EMAIL}
-      # Read by frontend/vite.config.ts. A hostname, resolved via extra_hosts
-      # below -- the IP itself is not passed into this container.
+      # Read by frontend/vite.config.ts. A hostname, resolved via net's
+      # extra_hosts -- the IP itself is not passed into this container.
       HA_TARGET: ${HA_TARGET:?set in dev/claude/.env}
-    ports:
-      # 127.0.0.1 only: the Vite dev server is for this machine's browser, not
-      # the LAN. Keep the mapping 1:1 or Vite's HMR socket needs clientPort set.
-      - "127.0.0.1:5173:5173"
-    extra_hosts:
-      # So HA_TARGET's hostname resolves in here without LAN DNS.
-      - "${HA_HOSTNAME:?set in dev/claude/.env}:${HA_HOST_IP:?set in dev/claude/.env}"
     volumes:
       # The whole home directory, so the working copy, Claude Code and its
       # history, and the shell's state all survive the container being recreated.
       - home:/home/dev
-
-  # Egress firewall applied to the dev container's network namespace: public
-  # internet and one Home Assistant host:port, nothing else private.
-  # See images/firewall/firewall.sh for the policy.
-  claude-firewall:
-    build: ./images/firewall
-    network_mode: "service:claude" # share the netns, so OUTPUT rules govern `claude`
-    init: true
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    environment:
-      HA_HOST_IP: ${HA_HOST_IP:?set in dev/claude/.env}
-      HA_PORT: ${HA_PORT:-8123}
-    depends_on:
-      - claude
-    restart: unless-stopped
 
 volumes:
   home:

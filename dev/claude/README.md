@@ -23,9 +23,9 @@ cp dev/claude/.env.example dev/claude/.env   # then fill it in -- see the file
 bin/claude                                   # that's it
 ```
 
-`bin/claude` builds the images if they've changed, starts the stack, reattaches
-the firewall, clones the repository on first run, and drops you into a Claude
-Code session in the checkout.
+`bin/claude` builds the images if they've changed, starts the stack, verifies
+the firewall is actually in effect, clones the repository on first run, and
+drops you into a Claude Code session in the checkout.
 
 The container is a sandbox rather than a permission model, so
 `--dangerously-skip-permissions` is a reasonable thing to add if you want it —
@@ -46,17 +46,32 @@ bin/claude bash -l         # a shell
 bin/claude npm run dev     # one command
 ```
 
-Two hazards, both inherited from how compose handles a shared network namespace:
+> **Never** use `docker compose run claude` — that spawns a container outside
+> the firewalled namespace entirely, so it is **unfirewalled**. The launcher
+> uses `exec` for this reason.
 
-> **Never** use `docker compose run claude` — that spawns a new container the
-> firewall isn't attached to, so it is **unfirewalled**. The launcher uses
-> `exec` for this reason.
+### Which container owns the network namespace
 
-> Compose does **not** reattach the firewall when the `claude` container gets a
-> fresh netns, so a bare restart leaves it unfirewalled until the sidecar is
-> force-recreated. `bin/claude` does that every time; if you drive compose by
-> hand, run `docker compose up -d --force-recreate claude-firewall` after any
-> recreate of `claude`.
+`net` owns it; `claude` joins with `network_mode: service:net`. That direction
+matters. Namespaces belong to the container that created them, so with the
+ownership reversed, every recreate of the dev container — a rebuild, a changed
+Dockerfile — would hand it a **fresh, empty, default-ACCEPT** namespace while
+the firewall sidecar stayed bound to the old one. Silently unfirewalled, in the
+most routine operation there is.
+
+This way round, recreating the dev container rejoins a namespace that already
+has the rules in it. Verified: force-recreating `claude` leaves a LAN probe
+rejected in 0.1s, where the old arrangement left `-P OUTPUT ACCEPT`.
+
+Two consequences of the inversion:
+
+- **`ports` and `extra_hosts` live on `net`.** Docker refuses both on a
+  container using `network_mode: container:…`. `/etc/hosts` is bind-mounted into
+  the joiner, so `extra_hosts` still resolves in the dev container.
+- **Recreating `net` strands the dev container** on a dead namespace, and
+  compose won't recreate dependents. It fails *closed* — no network at all
+  rather than unfiltered network — and `bin/claude` detects the mismatch by
+  comparing `/proc/self/ns/net` and recreates the dev container itself.
 
 ## Publishing: `bin/push`
 
@@ -123,9 +138,8 @@ stopped, rebuilt or recreated — but not the volume being deleted.
 | The host machine | blocked, with no exceptions |
 
 There is no pure-compose way to say "internet yes, LAN no", so this is done with
-`iptables` in a sidecar that shares the dev container's network namespace
-(`network_mode: service:claude`). The dev container has no `NET_ADMIN`, so it
-can't alter the rules. Default policy is `DROP` and `iptables` is baked into the
+`iptables` in the `net` container, whose network namespace the dev container
+joins. The dev container has no `NET_ADMIN`, so it can't alter the rules. Default policy is `DROP` and `iptables` is baked into the
 image, so a firewall script that dies partway leaves the container with no
 egress rather than full access.
 

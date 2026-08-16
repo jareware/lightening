@@ -1,13 +1,6 @@
 #!/usr/bin/env bash
 # Start an agentic dev session in the firewalled dev container.
 #
-# Why a wrapper rather than plain compose:
-#  1. `docker compose run claude` would spawn a NEW container that the firewall
-#     sidecar is not attached to -- i.e. unfirewalled. Never use it.
-#  2. Compose does not reattach the firewall when `claude` gets a fresh netns,
-#     so a bare restart leaves the container unfirewalled until the sidecar is
-#     force-recreated. We do that here, before handing over the session.
-#
 # Usage:
 #   bin/claude                 # a Claude Code session, in the checkout
 #   bin/claude bash -l         # a shell instead
@@ -15,6 +8,9 @@
 #
 # Publishing is bin/push, which runs on the host -- the container holds no
 # GitHub credential, so the agent can't push from in here.
+#
+# Note: `docker compose run claude` would spawn a container outside the
+# firewalled network namespace. Never use it; this wrapper uses `exec`.
 set -euo pipefail
 cd "$(dirname "$0")/../dev/claude"
 
@@ -28,7 +24,39 @@ fi
 
 # --build is cheap when cached, and means a changed Dockerfile can't be missed.
 docker compose up -d --build
-docker compose up -d --force-recreate claude-firewall  # reattach to the current netns
+
+# The dev container joins net's network namespace, so it inherits whatever rules
+# are in it. Check rather than assume: an empty namespace is default-ACCEPT, and
+# would leave the agent with a route to the LAN and the host.
+#
+# Polled, because `up -d` returns once the container is started -- which is
+# before firewall.sh has finished applying anything.
+firewalled=no
+for _ in $(seq 1 40); do
+  if docker compose exec -T net iptables -S OUTPUT 2>/dev/null | grep -q '^-P OUTPUT DROP'; then
+    firewalled=yes
+    break
+  fi
+  sleep 0.25
+done
+
+if [ "$firewalled" != yes ]; then
+  echo >&2
+  echo "REFUSING TO START: the egress firewall is not in effect." >&2
+  echo "Check 'docker compose logs net' in dev/claude/, then recreate both:" >&2
+  echo "  cd dev/claude && docker compose up -d --force-recreate" >&2
+  exit 1
+fi
+
+# Recreating `net` gives it a new namespace, and compose does not recreate the
+# containers joined to it -- they're left pointing at a dead one, with no
+# network at all. Fails closed, but it needs fixing, and recreating the dev
+# container costs nothing when its network is already gone.
+if [ "$(docker compose exec -T claude readlink /proc/self/ns/net 2>/dev/null)" \
+     != "$(docker compose exec -T net readlink /proc/self/ns/net 2>/dev/null)" ]; then
+  echo "Dev container is on a stale network namespace; recreating it..."
+  docker compose up -d --force-recreate claude
+fi
 
 # First run: the container starts empty, since nothing is bind-mounted.
 if ! docker compose exec -T claude test -d "$REPO_DIR/.git"; then
