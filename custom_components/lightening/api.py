@@ -1,6 +1,6 @@
 from aiohttp import web
 
-from homeassistant.components.http import HomeAssistantView, KEY_HASS
+from homeassistant.components.http import HomeAssistantView, KEY_HASS, require_admin
 
 from .const import DOMAIN
 
@@ -8,15 +8,18 @@ MAX_SVG_SIZE = 10 * 1024 * 1024  # 10 MB
 
 
 class LighteningUploadView(HomeAssistantView):
-    """Upload and delete the floorplan. Admin-only: the SVG is inlined into the
-    panel DOM, so being able to replace it is effectively code execution in
-    every viewer's session."""
+    """
+    Upload and delete the floorplan.
+
+    Writes are admin-only: the SVG is inlined into the panel DOM, so replacing
+    it is effectively code execution in every viewer's session.
+    """
 
     url = "/api/lightening/floorplan"
     name = "api:lightening:floorplan"
     requires_auth = True
-    requires_admin = True
 
+    @require_admin
     async def post(self, request: web.Request) -> web.Response:
         hass = request.app[KEY_HASS]
         store = hass.data[DOMAIN]["store"]
@@ -39,6 +42,7 @@ class LighteningUploadView(HomeAssistantView):
         )
         return web.json_response({"ok": True})
 
+    @require_admin
     async def delete(self, request: web.Request) -> web.Response:
         hass = request.app[KEY_HASS]
         store = hass.data[DOMAIN]["store"]
