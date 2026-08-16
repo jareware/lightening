@@ -28,24 +28,34 @@ docker compose up -d --build
 # The dev container joins net's network namespace, so it inherits whatever rules
 # are in it. Check rather than assume: an empty namespace is default-ACCEPT, and
 # would leave the agent with a route to the LAN and the host.
-#
-# Polled, because `up -d` returns once the container is started -- which is
-# before firewall.sh has finished applying anything.
-firewalled=no
-for _ in $(seq 1 40); do
-  if docker compose exec -T net iptables -S OUTPUT 2>/dev/null | grep -q '^-P OUTPUT DROP'; then
-    firewalled=yes
-    break
-  fi
-  sleep 0.25
-done
+egress="$(docker compose exec -T net printenv EGRESS 2>/dev/null | tr -d '\r')" || egress=""
 
-if [ "$firewalled" != yes ]; then
-  echo >&2
-  echo "REFUSING TO START: the egress firewall is not in effect." >&2
-  echo "Check 'docker compose logs net' in dev/claude/, then recreate both:" >&2
-  echo "  cd dev/claude && docker compose up -d --force-recreate" >&2
-  exit 1
+if [ "$egress" = any ]; then
+  echo
+  echo "WARNING: EGRESS=any -- the firewall is OFF."
+  echo "The dev container can reach the internet, your LAN, and your host machine,"
+  echo "including anything bound to a localhost port. Set EGRESS=allowlist in"
+  echo "dev/claude/.env and re-run this to restore it."
+  echo
+else
+  # Polled, because `up -d` returns once the container is started -- which is
+  # before firewall.sh has finished applying anything.
+  firewalled=no
+  for _ in $(seq 1 40); do
+    if docker compose exec -T net iptables -S OUTPUT 2>/dev/null | grep -q '^-P OUTPUT DROP'; then
+      firewalled=yes
+      break
+    fi
+    sleep 0.25
+  done
+
+  if [ "$firewalled" != yes ]; then
+    echo >&2
+    echo "REFUSING TO START: the egress firewall is not in effect." >&2
+    echo "Check 'docker compose logs net' in dev/claude/, then recreate both:" >&2
+    echo "  cd dev/claude && docker compose up -d --force-recreate" >&2
+    exit 1
+  fi
 fi
 
 # Recreating `net` gives it a new namespace, and compose does not recreate the

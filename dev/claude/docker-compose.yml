@@ -34,6 +34,10 @@ services:
     environment:
       HA_HOST_IP: ${HA_HOST_IP:?set in dev/claude/.env}
       HA_PORT: ${HA_PORT:-8123}
+      # allowlist (default) or any -- see images/firewall/firewall.sh. Changing
+      # this recreates net, which strands the dev container until bin/claude
+      # repairs it.
+      EGRESS: ${EGRESS:-allowlist}
     ports:
       # 127.0.0.1 only: the Vite dev server is for this machine's browser, not
       # the LAN. Keep the mapping 1:1 or Vite's HMR socket needs clientPort set.

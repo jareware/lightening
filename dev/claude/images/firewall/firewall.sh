@@ -1,62 +1,157 @@
 #!/bin/sh
 set -eu
 
-# Egress firewall for the dev container.
+# Egress policy for the dev container.
 #
 # This container owns the network namespace and the dev container joins it
-# (`network_mode: service:net`), so these OUTPUT rules govern the dev
-# container's outbound traffic. It has no NET_ADMIN, so it cannot alter them.
+# (`network_mode: service:net`), so these rules govern the dev container's
+# outbound traffic. It has no NET_ADMIN, so it cannot alter them.
 #
 # Ownership is this way round on purpose: recreating the dev container rejoins a
 # namespace that still has these rules. Were it the owner, every rebuild would
 # hand it a fresh, empty, default-ACCEPT namespace instead.
 #
-# Policy:
-#   ALLOW  the public internet          (Anthropic API, npm, GitHub, docs)
-#   ALLOW  one LAN host, on one port    (Home Assistant, for the Vite dev proxy)
-#   DENY   everything else private      -- the rest of the LAN, and the host machine
+# Two modes, set by EGRESS in dev/claude/.env:
 #
-# The host is not reachable at all: Docker Desktop's host-gateway address falls
-# inside the RFC1918 ranges rejected below, and unlike some setups we need no
-# exception for anything running on the host.
+#   allowlist (default)  deny everything outbound except the domains below, the
+#                        Home Assistant instance, and loopback
+#   any                  no firewall at all -- including reachability of the
+#                        HOST machine, so every service you have bound to a
+#                        localhost port is exposed to whatever runs in here
 #
-# Fail-closed: the default policy is DROP and iptables is baked into the image,
-# so a script that dies partway leaves the container with no egress rather than
-# with full access.
+# Changing the mode changes this container's environment, so compose recreates
+# it; bin/claude then repairs the stranded dev container.
+#
+# Fail-closed: in allowlist mode the policy is DROP before any accept is added,
+# and everything needed is baked into the image, so a script that dies partway
+# leaves the container with no egress rather than full access.
 
+EGRESS="${EGRESS:-allowlist}"
 HA_HOST_IP="${HA_HOST_IP:?set HA_HOST_IP in dev/claude/.env}"
 HA_PORT="${HA_PORT:-8123}"
 
-echo "firewall: permitting Home Assistant at ${HA_HOST_IP}:${HA_PORT}"
+# What the box may reach by name in allowlist mode.
+#
+# Anthropic's own hosts, per
+# https://code.claude.com/docs/en/network-config#network-access-requirements --
+# api.anthropic.com is inference, statsig is feature flags, platform is OAuth
+# token refresh (a setup-token credential still refreshes), downloads is the
+# auto-updater.
+#
+# github/npm are here because without them the container cannot bootstrap
+# itself: bin/claude clones on first run, and the frontend needs `npm ci`.
+#
+# Deliberately absent: both Datadog telemetry intakes and any org-managed OTEL
+# collector. Managed settings sit at the top of Claude Code's precedence chain
+# and can be delivered server-side, so an env var is a request while a firewall
+# rule is a fact.
+#
+# Also absent, and you will notice: documentation hosts. Fetching docs is how
+# several Home Assistant API mistakes were caught in this project, so expect
+# WebFetch to fail here and switch to EGRESS=any when that matters.
+ALLOWED_DOMAINS="
+api.anthropic.com
+statsig.anthropic.com
+platform.claude.com
+downloads.claude.ai
+github.com
+codeload.github.com
+registry.npmjs.org
+"
 
-### IPv4 -- the LAN, the host and Home Assistant are all IPv4.
-iptables -F OUTPUT
-iptables -P OUTPUT DROP
-iptables -A OUTPUT -o lo -j ACCEPT
-iptables -A OUTPUT -d 127.0.0.0/8 -j ACCEPT                                 # Docker's embedded DNS (127.0.0.11)
-iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-iptables -A OUTPUT -d "$HA_HOST_IP" -p tcp --dport "$HA_PORT" -j ACCEPT     # the one LAN exception, before the reject
-for net in 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 169.254.0.0/16 100.64.0.0/10; do
-  iptables -A OUTPUT -d "$net" -j REJECT                                    # LAN, host, CGNAT, link-local
-done
-iptables -A OUTPUT -j ACCEPT                                                # whatever is left is the public internet
+SET4=allowed4
+SET_TIMEOUT=86400 # 24h -- see the note in configure_dns()
 
-# Note: there is deliberately no blanket allow for the Docker bridge subnet.
-# Nothing else runs on this network. If a sidecar is ever added (an MCP server,
-# say), it needs an explicit rule -- 172.16/12 is rejected above.
+DNS_LISTEN=127.0.0.1  # where dnsmasq listens; the dev container shares this netns
+DNS_UPSTREAM=127.0.0.11 # Docker's embedded resolver, on loopback in-netns
 
-### IPv6 -- no exceptions; nothing we depend on is IPv6-only.
-ip6tables -F OUTPUT
-ip6tables -P OUTPUT DROP
-ip6tables -A OUTPUT -o lo -j ACCEPT
-ip6tables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-ip6tables -A OUTPUT -d fc00::/7 -j REJECT                                   # ULA: host-services net, any IPv6 LAN
-ip6tables -A OUTPUT -d fe80::/10 -j REJECT                                  # link-local
-ip6tables -A OUTPUT -j ACCEPT                                               # public IPv6 internet
+reset_rules() {
+  iptables -F OUTPUT
+  iptables -P OUTPUT ACCEPT
+  ip6tables -F OUTPUT
+  ip6tables -P OUTPUT ACCEPT
+}
 
-echo "firewall: rules applied -----------------------------------"
+# dnsmasq becomes the only resolver for the namespace, and adds each resolved
+# address of an allowlisted domain to $SET4 *as it answers the query* -- so the
+# address the box is about to dial is permitted by the time it connects. A
+# resolve-once-at-startup snapshot would go stale against CDN rotation and fail
+# silently, which is the whole reason for doing it this way.
+#
+# The 24h set timeout is long on purpose: entries are only re-added on a cache
+# *miss*, so a short timeout would expire an address that dnsmasq still has
+# cached and silently break a long-running session.
+configure_dns() {
+  domains=$(echo "$ALLOWED_DOMAINS" | tr -s '[:space:]' '/' | sed 's|^/||; s|/$||')
+
+  cat > /etc/dnsmasq.conf <<EOF
+# Generated by firewall.sh -- do not edit.
+listen-address=$DNS_LISTEN
+bind-interfaces
+no-resolv
+no-hosts
+server=$DNS_UPSTREAM
+ipset=/$domains/$SET4
+EOF
+
+  dnsmasq --conf-file=/etc/dnsmasq.conf
+
+  # Shared with the dev container, so this points the whole namespace at
+  # dnsmasq. No 127.0.0.11 fallback: a fallback would resolve *around* dnsmasq
+  # and never populate the allow-set.
+  printf 'nameserver %s\noptions ndots:0\n' "$DNS_LISTEN" > /etc/resolv.conf
+}
+
+apply_allowlist() {
+  ipset destroy "$SET4" 2>/dev/null || true
+  ipset create "$SET4" hash:ip timeout "$SET_TIMEOUT"
+
+  iptables -F OUTPUT
+  iptables -P OUTPUT DROP
+  iptables -A OUTPUT -o lo -j ACCEPT
+  iptables -A OUTPUT -d 127.0.0.0/8 -j ACCEPT # dnsmasq, and its upstream
+  iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+  # Home Assistant: a LAN address that is never resolved, so it's a targeted
+  # hole rather than an allowlisted domain.
+  iptables -A OUTPUT -d "$HA_HOST_IP" -p tcp --dport "$HA_PORT" -j ACCEPT
+  iptables -A OUTPUT -m set --match-set "$SET4" dst -p tcp -m multiport --dports 80,443 -j ACCEPT
+  # Reject rather than drop, so a blocked connection fails immediately instead
+  # of hanging until something times out.
+  iptables -A OUTPUT -p tcp -j REJECT --reject-with tcp-reset
+  iptables -A OUTPUT -j REJECT
+
+  # No IPv6 egress at all. Nothing we allow is v6-only, and the allow-set is v4;
+  # leaving v6 open would route straight around the allowlist.
+  ip6tables -F OUTPUT
+  ip6tables -P OUTPUT DROP
+  ip6tables -A OUTPUT -o lo -j ACCEPT
+  ip6tables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+  ip6tables -A OUTPUT -j REJECT
+}
+
+case "$EGRESS" in
+  any)
+    reset_rules
+    echo "firewall: EGRESS=any -- NO restrictions."
+    echo "firewall: the dev container can now reach the internet, your LAN, AND"
+    echo "firewall: your host machine, including anything bound to a localhost"
+    echo "firewall: port that assumes localhost means trusted."
+    ;;
+  allowlist)
+    apply_allowlist
+    configure_dns
+    echo "firewall: EGRESS=allowlist"
+    echo "firewall: Home Assistant at ${HA_HOST_IP}:${HA_PORT}"
+    echo "firewall: allowed by name:" $ALLOWED_DOMAINS
+    ;;
+  *)
+    echo "firewall: unknown EGRESS='$EGRESS' (expected 'allowlist' or 'any')" >&2
+    exit 1
+    ;;
+esac
+
+echo "firewall: rules applied ------------------------------------------"
 iptables -S OUTPUT
-ip6tables -S OUTPUT
 echo "------------------------------------------------------------------"
 
 # Stay alive: this container owns the namespace the dev container is using, so

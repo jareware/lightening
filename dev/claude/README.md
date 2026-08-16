@@ -130,18 +130,54 @@ stopped, rebuilt or recreated — but not the volume being deleted.
 
 ## What the container can reach
 
+Set by `EGRESS` in `.env`. The default denies everything outbound except:
+
 | | |
 |---|---|
-| Public internet | allowed — the Anthropic API, npm, GitHub, documentation |
-| One Home Assistant host, port 8123 | allowed — the Vite dev server proxies to it |
-| The rest of the LAN | blocked |
-| The host machine | blocked, with no exceptions |
+| `api.anthropic.com`, `statsig.anthropic.com`, `platform.claude.com`, `downloads.claude.ai` | inference, feature flags, token refresh, auto-update |
+| `github.com`, `codeload.github.com`, `registry.npmjs.org` | without these the container can't clone itself or `npm ci` |
+| One Home Assistant host, port 8123 | the Vite dev server proxies to it |
 
-There is no pure-compose way to say "internet yes, LAN no", so this is done with
-`iptables` in the `net` container, whose network namespace the dev container
-joins. The dev container has no `NET_ADMIN`, so it can't alter the rules. Default policy is `DROP` and `iptables` is baked into the
-image, so a firewall script that dies partway leaves the container with no
-egress rather than full access.
+Everything else — the rest of the internet, the rest of the LAN, and the host
+machine — is **rejected**, so blocked connections fail immediately rather than
+hanging. Notably absent: Claude Code's telemetry intakes and any org-managed
+OTEL collector. Managed settings sit at the top of Claude Code's precedence
+chain and can be delivered server-side, so an env var is a request whereas a
+firewall rule is a fact.
+
+`EGRESS=any` removes the firewall entirely. That also makes the **host machine**
+reachable, exposing anything you have bound to a localhost port — often things
+that assume localhost means trusted. `bin/claude` prints a warning while it's
+in effect. Switching modes recreates `net`; `bin/claude` handles the rest.
+
+### How the allowlist is enforced
+
+`dnsmasq` runs in `net` and is the namespace's only resolver — `/etc/resolv.conf`
+is shared into the dev container, so pointing it at dnsmasq covers both. Its
+`ipset` directive adds each resolved address of an allowlisted domain to an
+ipset **as it answers the query**, and iptables permits that set on ports 80 and
+443. So the address is allowed exactly when the client is about to dial it,
+which tracks DNS rotation; resolving once at startup would go stale against CDN
+addresses and fail silently. Entries age out after 24h — long on purpose, since
+they're only re-added on a cache *miss*, and a shorter timeout would expire an
+address dnsmasq still has cached and break a running session.
+
+Home Assistant is a plain IP:port rule rather than an allowlisted domain, since
+it's a LAN address that's never resolved.
+
+Two honest limitations:
+
+- **The grain is IP, not hostname.** Anything sharing an allowlisted IP is
+  reachable. In practice `code.claude.com` and `platform.claude.com` both sit
+  behind the same address as `api.anthropic.com`, so allowing the API allows
+  those too. Convenient here, but don't mistake it for precision.
+- **Documentation hosts are otherwise unreachable.** `developers.home-assistant.io`
+  and `raw.githubusercontent.com` are blocked, and doc lookups caught several
+  Home Assistant API mistakes in this project. Switch to `EGRESS=any` when that
+  matters.
+
+Alpine's dnsmasq is built with `ipset` but `no-nftset`, which is why this is
+ipset + iptables rather than nftables.
 
 The published port `127.0.0.1:5173` still works: that's inbound, and `OUTPUT`
 rules don't govern it.
@@ -149,12 +185,9 @@ rules don't govern it.
 Verify from inside:
 
 ```bash
-# permitted
 curl -s -o /dev/null -w '%{http_code}\n' https://registry.npmjs.org/   # 200
-
-# blocked -- both fail to connect
-curl -s --max-time 6 http://host.docker.internal/
-curl -s --max-time 6 http://<some-other-LAN-address>/
+curl -s --max-time 8 https://example.com/                              # exit 7, instantly
+curl -s --max-time 8 http://host.docker.internal/                      # exit 7
 ```
 
 ## Credentials
