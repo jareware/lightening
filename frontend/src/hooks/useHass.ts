@@ -25,10 +25,19 @@ export interface HassEntity {
   last_updated: string;
 }
 
+/** HA's own WebSocket connection, which we borrow rather than opening our own. */
+interface HassConnection {
+  subscribeEvents: (
+    callback: (event: unknown) => void,
+    eventType: string,
+  ) => Promise<() => void>;
+}
+
 /** The subset of HA's `hass` object we rely on. */
 interface HassObject {
   states: Record<string, HassEntity>;
   auth: { accessToken: string };
+  connection: HassConnection;
   callService: (
     domain: string,
     service: string,
@@ -66,6 +75,12 @@ export interface Hass {
   moreInfo: (entityId: string) => void;
   /** Authenticated fetch against HA. Paths are relative -- we're same-origin. */
   fetchApi: (path: string, init?: RequestInit) => Promise<Response>;
+  /**
+   * Listen for an event on HA's bus, over HA's existing socket. Returns a
+   * synchronous unsubscribe, safe to return straight from a useEffect even if
+   * the subscription hasn't been established yet.
+   */
+  subscribeEvent: (eventType: string, callback: () => void) => () => void;
 }
 
 /**
@@ -114,6 +129,25 @@ export function useHass(): Hass {
     panelEl?.fireEvent?.('hass-more-info', { entityId });
   }, []);
 
+  const subscribeEvent = useCallback<Hass['subscribeEvent']>((eventType, callback) => {
+    const connection = panelEl?.hass?.connection;
+    if (!connection) return () => {};
+
+    // subscribeEvents resolves asynchronously, so the caller may unsubscribe
+    // before we hold the handle. Track that and tear down on arrival.
+    let unsubscribe: (() => void) | undefined;
+    let cancelled = false;
+    connection.subscribeEvents(callback, eventType).then((fn) => {
+      if (cancelled) fn();
+      else unsubscribe = fn;
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, []);
+
   const fetchApi = useCallback<Hass['fetchApi']>((path, init) => {
     const token = panelEl?.hass?.auth?.accessToken;
     return fetch(path, {
@@ -128,5 +162,6 @@ export function useHass(): Hass {
     callService,
     moreInfo,
     fetchApi,
+    subscribeEvent,
   };
 }

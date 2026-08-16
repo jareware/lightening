@@ -11,12 +11,14 @@ import {
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
-import { useHass } from './hass/useHass';
+import { useHass } from './hooks/useHass';
 import { useFloorplan } from './hooks/useFloorplan';
+import { useConfig } from './hooks/useConfig';
 
 function App() {
   const hass = useHass();
   const { svg, loading, error, upload, remove } = useFloorplan(hass);
+  const { error: configError } = useConfig(hass);
   const fileInput = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
 
@@ -91,9 +93,9 @@ function App() {
         </Box>
       </Box>
 
-      {error && (
+      {(error || configError) && (
         <Alert severity="error" sx={{ borderRadius: 0 }}>
-          {error}
+          {error ?? configError}
         </Alert>
       )}
 

@@ -11,8 +11,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.loader import async_get_integration
 
 from .const import DOMAIN
-from .store import FloorplanStore
-from .api import LighteningUploadView, LighteningFloorplanView
+from .store import ConfigStore, FloorplanStore
+from .api import (
+    LighteningConfigView,
+    LighteningFloorplanView,
+    LighteningUploadView,
+)
 
 STATIC_URL = "/lightening-assets"
 PANEL_FRONTEND_PATH = "custom_components/lightening/frontend"
@@ -25,8 +29,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Off the event loop -- HA flags blocking I/O during setup.
     await hass.async_add_executor_job(partial(os.makedirs, uploads_path, exist_ok=True))
 
-    store = FloorplanStore(uploads_path)
-    hass.data[DOMAIN] = {"store": store}
+    hass.data[DOMAIN] = {
+        "floorplan": FloorplanStore(uploads_path),
+        "config": ConfigStore(hass),
+    }
 
     await hass.http.async_register_static_paths(
         [StaticPathConfig(STATIC_URL, frontend_path, cache_headers=False)]
@@ -34,6 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.http.register_view(LighteningUploadView)
     hass.http.register_view(LighteningFloorplanView)
+    hass.http.register_view(LighteningConfigView)
 
     # Straight from manifest.json, so there's no second copy to drift. Used only
     # to bust the browser cache on the glue when a new version is installed.

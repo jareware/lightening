@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Hass } from '../hass/useHass';
+import type { Hass } from './useHass';
 
 const API = '/api/lightening/floorplan';
 
