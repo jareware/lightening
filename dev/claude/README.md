@@ -20,22 +20,28 @@ dev/claude/
 
 ```bash
 cp dev/claude/.env.example dev/claude/.env   # then fill it in -- see the file
-bin/claude                                   # builds if needed, then a shell
+bin/claude                                   # that's it
 ```
+
+`bin/claude` builds the images if they've changed, starts the stack, reattaches
+the firewall, clones the repository on first run, and drops you into a Claude
+Code session in the checkout. Permission prompts are off: the container is the
+sandbox, and it holds no host credentials, no GitHub credential, and no route to
+the LAN or your host.
 
 The token in `.env` comes from `claude setup-token`, run on a machine that is
 already signed in. Inside the container, `claude` picks it up from the
 environment — there's no browser sign-in to complete.
 
-First time in, clone the repo and install:
+Dependencies aren't installed automatically, since it's a slow step that isn't
+always wanted: run `npm ci` in `frontend/` before using the dev server.
+
+Any arguments are run as a command instead of starting a session:
 
 ```bash
-git clone https://github.com/jareware/lightening.git
-cd lightening/frontend && npm ci
+bin/claude bash -l         # a shell
+bin/claude npm run dev     # one command
 ```
-
-`bin/claude` also takes a command: `bin/claude claude` goes straight into Claude
-Code, `bin/claude npm run dev` runs one thing.
 
 Two hazards, both inherited from how compose handles a shared network namespace:
 

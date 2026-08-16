@@ -1,33 +1,45 @@
 #!/usr/bin/env bash
-# Get a shell (or run a command) in the firewalled dev container.
+# Start an agentic dev session in the firewalled dev container.
 #
 # Why a wrapper rather than plain compose:
 #  1. `docker compose run claude` would spawn a NEW container that the firewall
 #     sidecar is not attached to -- i.e. unfirewalled. Never use it.
 #  2. Compose does not reattach the firewall when `claude` gets a fresh netns,
 #     so a bare restart leaves the container unfirewalled until the sidecar is
-#     force-recreated. We do that here, before handing over a shell.
+#     force-recreated. We do that here, before handing over the session.
 #
 # Usage:
-#   bin/claude                 # interactive login shell in the container
-#   bin/claude claude          # go straight into Claude Code
+#   bin/claude                 # a Claude Code session, in the checkout
+#   bin/claude bash -l         # a shell instead
 #   bin/claude npm run dev     # run one command
 #
-# Publishing what you do in there is bin/push -- deliberately a separate,
-# host-side command, so no GitHub credential ever enters the container.
+# Permission prompts are off by default: the container is the sandbox, and it
+# holds no host credentials, no GitHub credential, and no route to the LAN or
+# host. Publishing is bin/push, which runs on the host for that reason.
 set -euo pipefail
 cd "$(dirname "$0")/../dev/claude"
+
+REPO_URL="https://github.com/jareware/lightening.git"
+REPO_DIR="/home/dev/lightening"
 
 if [ ! -f .env ]; then
   echo "dev/claude/.env is missing -- copy .env.example to .env and fill it in." >&2
   exit 1
 fi
 
-docker compose up -d                                   # ensure the stack is running
-docker compose up -d --force-recreate claude-firewall  # (re)attach the firewall to the current netns
+# --build is cheap when cached, and means a changed Dockerfile can't be missed.
+docker compose up -d --build
+docker compose up -d --force-recreate claude-firewall  # reattach to the current netns
+
+# First run: the container starts empty, since nothing is bind-mounted.
+if ! docker compose exec -T claude test -d "$REPO_DIR/.git"; then
+  echo "First run -- cloning the repository into the container..."
+  docker compose exec -T claude git clone --quiet "$REPO_URL" "$REPO_DIR"
+  echo "Cloned to $REPO_DIR. Run 'npm ci' in frontend/ before using the dev server."
+fi
 
 if [ $# -eq 0 ]; then
-  exec docker compose exec -it claude bash -l
+  exec docker compose exec -it -w "$REPO_DIR" claude claude --dangerously-skip-permissions
 else
-  exec docker compose exec -it claude "$@"
+  exec docker compose exec -it -w "$REPO_DIR" claude "$@"
 fi
